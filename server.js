@@ -74,6 +74,11 @@ app.get('/api/search', async (req, res) => {
 // ── Statik dosyaları sun ──
 app.use(express.static('.'));
 
-app.listen(port, () => {
-    console.log(`✨ MematiPP http://localhost:${port} adresinde çalışıyor`);
-});
+// ── Sunucuyu Başlat (Sadece yerel çalıştırmada) ──
+if (require.main === module) {
+    app.listen(port, () => {
+        console.log(`✨ MematiPP http://localhost:${port} adresinde çalışıyor`);
+    });
+}
+
+module.exports = app;
