@@ -32,9 +32,9 @@ app.get('/api/search', async (req, res) => {
         if (userData) {
             const hdUrl = userData.hd_profile_pic_url_info?.url || userData.profile_pic_url_hd || userData.profile_pic_url;
             
-            // Son gönderileri çek (max 12)
+            // Gönderileri çek (Instagram başlangıçta yaklaşık 12-50 arası gönderi döner)
             const timelineEdges = userData.edge_owner_to_timeline_media?.edges || [];
-            const recentPosts = timelineEdges.slice(0, 12).map(edge => {
+            const recentPosts = timelineEdges.map(edge => {
                 const node = edge.node;
                 return {
                     display_url: `/api/proxy?src=${encodeURIComponent(node.display_url || node.thumbnail_src || '')}`,
