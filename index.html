@@ -528,11 +528,214 @@
       .search-btn { padding: 10px 14px; }
       .profile-stats { flex-wrap: wrap; }
       .stat { min-width: 33%; }
+      .posts-grid { gap: 2px; }
+      .bio-link { font-size: 12px; padding: 8px 14px; }
+    }
+
+    /* ── Kategori Rozeti ── */
+    .category-badge {
+      display: none;
+      align-items: center;
+      gap: 5px;
+      font-size: 11px;
+      font-weight: 600;
+      padding: 4px 12px;
+      border-radius: var(--radius-full);
+      background: linear-gradient(135deg, rgba(139,92,246,0.15) 0%, rgba(236,72,153,0.10) 100%);
+      border: 1px solid rgba(139,92,246,0.2);
+      color: var(--accent-violet-light);
+      letter-spacing: 0.3px;
+      white-space: nowrap;
+      backdrop-filter: blur(8px);
+      transition: all var(--transition);
+    }
+    .category-badge.active { display: inline-flex; }
+    .category-badge svg {
+      width: 12px; height: 12px;
+      color: var(--accent-violet-light);
+      flex-shrink: 0;
+    }
+
+    /* ── Kullanıcı ID Rozeti ── */
+    .user-id-badge {
+      display: none;
+      font-size: 10px;
+      font-weight: 500;
+      color: var(--text-muted);
+      font-family: 'JetBrains Mono', monospace;
+      margin-top: 4px;
+      letter-spacing: 0.3px;
+    }
+    .user-id-badge.active { display: block; }
+
+    /* ── Bio Link Butonu ── */
+    .bio-link {
+      display: none;
+      align-items: center;
+      gap: 8px;
+      margin-top: 14px;
+      padding: 10px 18px;
+      border-radius: var(--radius-full);
+      background: rgba(59,130,246,0.08);
+      border: 1px solid rgba(59,130,246,0.2);
+      color: var(--accent-blue);
+      font-size: 13px;
+      font-weight: 600;
+      text-decoration: none;
+      transition: all var(--transition);
+      width: fit-content;
+      max-width: 100%;
+      overflow: hidden;
+    }
+    .bio-link.active { display: inline-flex; }
+    .bio-link:hover {
+      background: rgba(59,130,246,0.15);
+      border-color: rgba(59,130,246,0.4);
+      transform: translateY(-1px);
+      box-shadow: 0 4px 16px rgba(59,130,246,0.15);
+    }
+    .bio-link svg {
+      width: 15px; height: 15px;
+      flex-shrink: 0;
+      color: var(--accent-blue);
+    }
+    .bio-link-text {
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    /* ── Son Gönderiler Kartı ── */
+    .posts-card {
+      display: none;
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-2xl);
+      overflow: hidden;
+      margin-top: 20px;
+      box-shadow: var(--shadow-lg);
+      animation: slideUp 0.5s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+    .posts-card.active { display: block; }
+    .posts-header {
+      padding: 16px 24px;
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .posts-header-icon {
+      width: 28px; height: 28px;
+      border-radius: var(--radius-sm);
+      background: rgba(236,72,153,0.15);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .posts-header-icon svg {
+      width: 16px; height: 16px;
+      color: var(--accent-pink);
+    }
+    .posts-header-title {
+      font-size: 13px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      color: var(--text-secondary);
+    }
+    .posts-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 3px;
+      padding: 3px;
+    }
+
+    /* ── Gönderi Öğesi ── */
+    .post-item {
+      position: relative;
+      aspect-ratio: 1;
+      overflow: hidden;
+      cursor: pointer;
+      background: var(--bg-secondary);
+      border-radius: 2px;
+    }
+    .post-item img {
+      width: 100%; height: 100%;
+      object-fit: cover;
+      transition: transform 0.35s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+    .post-item:hover img {
+      transform: scale(1.08);
+    }
+    .post-overlay {
+      position: absolute;
+      inset: 0;
+      background: rgba(0,0,0,0.45);
+      backdrop-filter: blur(1px);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 20px;
+      opacity: 0;
+      transition: opacity 0.25s ease;
+    }
+    .post-item:hover .post-overlay {
+      opacity: 1;
+    }
+    .post-stat {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      color: white;
+      font-size: 14px;
+      font-weight: 700;
+      text-shadow: 0 1px 4px rgba(0,0,0,0.5);
+    }
+    .post-stat svg {
+      width: 18px; height: 18px;
+      fill: white;
+      filter: drop-shadow(0 1px 2px rgba(0,0,0,0.3));
+    }
+    .video-indicator {
+      position: absolute;
+      top: 8px; right: 8px;
+      color: white;
+      filter: drop-shadow(0 1px 4px rgba(0,0,0,0.5));
+    }
+    .video-indicator svg {
+      width: 20px; height: 20px;
+      fill: white;
+    }
+
+    /* ── Gönderiler boş durumu ── */
+    .posts-empty {
+      padding: 40px 24px;
+      text-align: center;
+      color: var(--text-muted);
+      font-size: 14px;
+      font-weight: 500;
+    }
+    .posts-empty-icon {
+      font-size: 32px;
+      margin-bottom: 8px;
+      opacity: 0.6;
+    }
+
+    /* ── Mobil uyumluluk güncellemeleri ── */
+    @media (max-width: 640px) {
+      .posts-grid { gap: 2px; padding: 2px; }
+      .posts-header { padding: 12px 16px; }
+      .post-stat { font-size: 12px; gap: 4px; }
+      .post-stat svg { width: 14px; height: 14px; }
+      .post-overlay { gap: 14px; }
+      .category-badge { font-size: 10px; padding: 3px 10px; }
+      .bio-link { font-size: 12px; padding: 8px 14px; }
+      .video-indicator svg { width: 16px; height: 16px; }
     }
 
     /* ── Yumuşak tema geçişleri ── */
-    body, .profile-card, .hd-card, .search-box, .btn-secondary, .footer,
-    .navbar, .ambient-bg, .hero-badge, .toast {
+    body, .profile-card, .hd-card, .posts-card, .search-box, .btn-secondary, .footer,
+    .navbar, .ambient-bg, .hero-badge, .toast, .category-badge, .bio-link {
       transition: background 0.4s ease, border-color 0.4s ease, color 0.4s ease, box-shadow 0.4s ease;
     }
 
@@ -879,9 +1082,18 @@
               <svg viewBox="0 0 24 24"><path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/></svg>
             </span>
             <span id="resPrivate" class="private-badge" style="display:none">🔒 Gizli</span>
+            <span id="resCategory" class="category-badge">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M20.59 13.41l-7.17 7.17a2 2 0 01-2.83 0L2 12V2h10l8.59 8.59a2 2 0 010 2.82z"/><line x1="7" y1="7" x2="7.01" y2="7"/></svg>
+              <span id="resCategoryText"></span>
+            </span>
           </div>
           <div id="resUsername" class="profile-username"></div>
+          <div id="resUserId" class="user-id-badge"></div>
           <div id="resBio" class="profile-bio"></div>
+          <a id="resBioLink" class="bio-link" href="#" target="_blank" rel="noopener">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M10 13a5 5 0 007.54.54l3-3a5 5 0 00-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 00-7.54-.54l-3 3a5 5 0 007.07 7.07l1.71-1.71"/></svg>
+            <span id="resBioLinkText" class="bio-link-text"></span>
+          </a>
         </div>
         <div class="profile-stats">
           <div class="stat">
@@ -927,6 +1139,17 @@
         </div>
         <div class="hd-resolution">1080 × 1080 px · Orijinal Çözünürlük</div>
       </div>
+    </div>
+
+    <!-- Son Gönderiler -->
+    <div id="postsCard" class="posts-card">
+      <div class="posts-header">
+        <div class="posts-header-icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>
+        </div>
+        <span class="posts-header-title">Son Gönderiler</span>
+      </div>
+      <div id="postsGrid" class="posts-grid"></div>
     </div>
   </section>
 
@@ -1031,6 +1254,41 @@
         document.getElementById('resVerified').style.display = d.is_verified ? 'inline-flex' : 'none';
         document.getElementById('resPrivate').style.display = d.is_private ? 'inline' : 'none';
 
+        // Kategori rozeti
+        const categoryEl = document.getElementById('resCategory');
+        const categoryText = document.getElementById('resCategoryText');
+        if (d.category_name) {
+          categoryText.textContent = d.category_name;
+          categoryEl.classList.add('active');
+        } else {
+          categoryEl.classList.remove('active');
+        }
+
+        // Kullanıcı ID
+        const userIdEl = document.getElementById('resUserId');
+        if (d.id) {
+          userIdEl.textContent = 'ID: ' + d.id;
+          userIdEl.classList.add('active');
+        } else {
+          userIdEl.classList.remove('active');
+        }
+
+        // Bio link
+        const bioLinkEl = document.getElementById('resBioLink');
+        const bioLinkText = document.getElementById('resBioLinkText');
+        if (d.external_url) {
+          try {
+            const urlObj = new URL(d.external_url);
+            bioLinkText.textContent = urlObj.hostname.replace('www.', '') + urlObj.pathname.replace(/\/$/, '');
+          } catch {
+            bioLinkText.textContent = d.external_url;
+          }
+          bioLinkEl.href = d.external_url;
+          bioLinkEl.classList.add('active');
+        } else {
+          bioLinkEl.classList.remove('active');
+        }
+
         // HD görsel
         document.getElementById('resHdImg').src = d.profile_pic_url_hd;
         document.getElementById('resDownload').href = d.profile_pic_url_hd;
@@ -1042,6 +1300,42 @@
         document.getElementById('modalDownload').href = d.profile_pic_url_hd;
         document.getElementById('modalDownload').download = d.username + '_hd.jpg';
         document.getElementById('modalOpen').href = d.profile_pic_url_hd;
+
+        // Son gönderiler grid
+        const postsCard = document.getElementById('postsCard');
+        const postsGrid = document.getElementById('postsGrid');
+        postsGrid.innerHTML = '';
+
+        if (d.recent_posts && d.recent_posts.length > 0) {
+          d.recent_posts.forEach(post => {
+            const item = document.createElement('a');
+            item.className = 'post-item';
+            item.href = `https://www.instagram.com/p/${post.shortcode}/`;
+            item.target = '_blank';
+            item.rel = 'noopener';
+            item.innerHTML = `
+              <img src="${post.display_url}" alt="Gönderi" loading="lazy"/>
+              ${post.is_video ? '<div class="video-indicator"><svg viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg></div>' : ''}
+              <div class="post-overlay">
+                <div class="post-stat">
+                  <svg viewBox="0 0 24 24"><path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/></svg>
+                  ${formatCount(post.likes)}
+                </div>
+                <div class="post-stat">
+                  <svg viewBox="0 0 24 24"><path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z" fill="white"/></svg>
+                  ${formatCount(post.comments)}
+                </div>
+              </div>
+            `;
+            postsGrid.appendChild(item);
+          });
+          postsCard.classList.add('active');
+        } else if (d.is_private) {
+          postsGrid.innerHTML = '<div class="posts-empty"><div class="posts-empty-icon">🔒</div>Bu hesap gizli – gönderiler görüntülenemiyor</div>';
+          postsCard.classList.add('active');
+        } else {
+          postsCard.classList.remove('active');
+        }
 
         loader.classList.remove('active');
         result.classList.add('active');

@@ -32,6 +32,19 @@ app.get('/api/search', async (req, res) => {
         if (userData) {
             const hdUrl = userData.hd_profile_pic_url_info?.url || userData.profile_pic_url_hd || userData.profile_pic_url;
             
+            // Son gönderileri çek (max 12)
+            const timelineEdges = userData.edge_owner_to_timeline_media?.edges || [];
+            const recentPosts = timelineEdges.slice(0, 12).map(edge => {
+                const node = edge.node;
+                return {
+                    display_url: `/api/proxy?src=${encodeURIComponent(node.display_url || node.thumbnail_src || '')}`,
+                    likes: node.edge_liked_by?.count || node.edge_media_preview_like?.count || 0,
+                    comments: node.edge_media_to_comment?.count || 0,
+                    shortcode: node.shortcode || '',
+                    is_video: node.is_video || false
+                };
+            });
+
             res.json({
                 success: true,
                 data: {
@@ -44,7 +57,12 @@ app.get('/api/search', async (req, res) => {
                     profile_pic_original: hdUrl,
                     followers: userData.edge_followed_by?.count || 0,
                     following: userData.edge_follow?.count || 0,
-                    posts: userData.edge_owner_to_timeline_media?.count || 0
+                    posts: userData.edge_owner_to_timeline_media?.count || 0,
+                    // Yeni alanlar
+                    id: userData.id || null,
+                    external_url: userData.external_url || null,
+                    category_name: userData.category_name || null,
+                    recent_posts: recentPosts
                 }
             });
         } else {
