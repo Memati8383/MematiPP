@@ -32,6 +32,75 @@ app.get('/api/search', async (req, res) => {
         if (userData) {
             const hdUrl = userData.hd_profile_pic_url_info?.url || userData.profile_pic_url_hd || userData.profile_pic_url;
             
+            // ── Çoklu profil fotoğrafları ──
+            // Instagram API'den gelen tüm profil fotoğrafı versiyonlarını topla
+            const profilePics = [];
+            const seenUrls = new Set();
+
+            // 1) hd_profile_pic_url_info (en yüksek çözünürlük)
+            if (userData.hd_profile_pic_url_info?.url) {
+                const u = userData.hd_profile_pic_url_info.url;
+                if (!seenUrls.has(u)) {
+                    seenUrls.add(u);
+                    profilePics.push({
+                        url: `/api/proxy?src=${encodeURIComponent(u)}`,
+                        original: u,
+                        width: userData.hd_profile_pic_url_info.width || 0,
+                        height: userData.hd_profile_pic_url_info.height || 0
+                    });
+                }
+            }
+
+            // 2) hd_profile_pic_versions (çoklu versiyonlar dizisi)
+            if (Array.isArray(userData.hd_profile_pic_versions)) {
+                for (const pic of userData.hd_profile_pic_versions) {
+                    if (pic?.url && !seenUrls.has(pic.url)) {
+                        seenUrls.add(pic.url);
+                        profilePics.push({
+                            url: `/api/proxy?src=${encodeURIComponent(pic.url)}`,
+                            original: pic.url,
+                            width: pic.width || 0,
+                            height: pic.height || 0
+                        });
+                    }
+                }
+            }
+
+            // 3) profile_pic_url_hd
+            if (userData.profile_pic_url_hd && !seenUrls.has(userData.profile_pic_url_hd)) {
+                seenUrls.add(userData.profile_pic_url_hd);
+                profilePics.push({
+                    url: `/api/proxy?src=${encodeURIComponent(userData.profile_pic_url_hd)}`,
+                    original: userData.profile_pic_url_hd,
+                    width: 0,
+                    height: 0
+                });
+            }
+
+            // 4) profile_pic_url (standart çözünürlük - yedek)
+            if (userData.profile_pic_url && !seenUrls.has(userData.profile_pic_url)) {
+                seenUrls.add(userData.profile_pic_url);
+                profilePics.push({
+                    url: `/api/proxy?src=${encodeURIComponent(userData.profile_pic_url)}`,
+                    original: userData.profile_pic_url,
+                    width: 150,
+                    height: 150
+                });
+            }
+
+            // En az 1 fotoğraf olsun (fallback)
+            if (profilePics.length === 0) {
+                profilePics.push({
+                    url: `/api/proxy?src=${encodeURIComponent(hdUrl)}`,
+                    original: hdUrl,
+                    width: 0,
+                    height: 0
+                });
+            }
+
+            // Büyükten küçüğe sırala
+            profilePics.sort((a, b) => (b.width * b.height) - (a.width * a.height));
+
             res.json({
                 success: true,
                 data: {
@@ -42,6 +111,7 @@ app.get('/api/search', async (req, res) => {
                     is_private: userData.is_private || false,
                     profile_pic_url_hd: `/api/proxy?src=${encodeURIComponent(hdUrl)}`,
                     profile_pic_original: hdUrl,
+                    profile_pics: profilePics,
                     followers: userData.edge_followed_by?.count || 0,
                     following: userData.edge_follow?.count || 0,
                     posts: userData.edge_owner_to_timeline_media?.count || 0

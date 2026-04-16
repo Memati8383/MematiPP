@@ -351,32 +351,117 @@
       font-size: 13px; font-weight: 700; text-transform: uppercase;
       letter-spacing: 1px; color: var(--text-secondary);
     }
+    .hd-pic-count {
+      margin-left: auto; font-size: 11px; font-weight: 600;
+      padding: 3px 10px; border-radius: var(--radius-full);
+      background: rgba(139,92,246,0.12); color: var(--accent-violet-light);
+    }
     .hd-body { padding: 24px; }
-    .hd-image-wrap {
+
+    /* ── Carousel / Slider ── */
+    .carousel-container {
       width: 100%; max-width: 400px; margin: 0 auto;
+      position: relative;
+    }
+    .carousel-viewport {
       aspect-ratio: 1; border-radius: var(--radius-xl);
       overflow: hidden; position: relative;
       border: 1px solid var(--border);
       background: var(--bg-secondary);
-      cursor: pointer; transition: all var(--transition);
+      cursor: pointer; transition: border-color var(--transition);
     }
-    .hd-image-wrap:hover { border-color: var(--accent-violet); }
-    .hd-image-wrap:hover .hd-overlay { opacity: 1; }
-    .hd-image {
+    .carousel-viewport:hover { border-color: var(--accent-violet); }
+    .carousel-track {
+      display: flex;
+      width: 100%; height: 100%;
+      transition: transform 0.45s cubic-bezier(0.25, 0.8, 0.25, 1);
+    }
+    .carousel-slide {
+      min-width: 100%; height: 100%;
+      position: relative;
+      flex-shrink: 0;
+    }
+    .carousel-slide img {
       width: 100%; height: 100%; object-fit: cover;
       transition: transform 0.3s ease;
     }
-    .hd-image-wrap:hover .hd-image { transform: scale(1.03); }
-    .hd-overlay {
+    .carousel-viewport:hover .carousel-slide img { transform: scale(1.03); }
+    .carousel-slide .hd-overlay {
       position: absolute; inset: 0;
       background: rgba(0,0,0,0.4); backdrop-filter: blur(2px);
       display: flex; align-items: center; justify-content: center;
       opacity: 0; transition: opacity var(--transition);
     }
-    .hd-overlay svg {
+    .carousel-viewport:hover .carousel-slide .hd-overlay { opacity: 1; }
+    .carousel-slide .hd-overlay svg {
       width: 48px; height: 48px; color: white;
       filter: drop-shadow(0 4px 12px rgba(0,0,0,0.3));
     }
+    .carousel-res-badge {
+      position: absolute; bottom: 10px; left: 10px;
+      padding: 3px 8px; border-radius: var(--radius-sm);
+      background: rgba(0,0,0,0.6); backdrop-filter: blur(6px);
+      font-size: 10px; font-weight: 600; color: rgba(255,255,255,0.85);
+      font-family: 'JetBrains Mono', monospace;
+      pointer-events: none; z-index: 2;
+    }
+
+    /* ── Carousel Okları ── */
+    .carousel-arrow {
+      position: absolute; top: 50%; transform: translateY(-50%);
+      width: 36px; height: 36px; border-radius: 50%;
+      background: rgba(0,0,0,0.45); backdrop-filter: blur(8px);
+      border: 1px solid rgba(255,255,255,0.15);
+      color: white; cursor: pointer;
+      display: flex; align-items: center; justify-content: center;
+      transition: all var(--transition); z-index: 5;
+      opacity: 0;
+    }
+    .carousel-container:hover .carousel-arrow { opacity: 1; }
+    .carousel-arrow:hover {
+      background: rgba(0,0,0,0.65);
+      border-color: rgba(255,255,255,0.3);
+      transform: translateY(-50%) scale(1.08);
+    }
+    .carousel-arrow:active { transform: translateY(-50%) scale(0.95); }
+    .carousel-arrow svg { width: 18px; height: 18px; }
+    .carousel-arrow--prev { left: 10px; }
+    .carousel-arrow--next { right: 10px; }
+    .carousel-arrow:disabled {
+      opacity: 0 !important; pointer-events: none;
+    }
+
+    /* ── Carousel Noktaları ── */
+    .carousel-dots {
+      display: flex; align-items: center; justify-content: center;
+      gap: 6px; margin-top: 14px;
+    }
+    .carousel-dot {
+      width: 7px; height: 7px; border-radius: 50%;
+      background: var(--border); border: none;
+      cursor: pointer; transition: all 0.3s ease;
+      padding: 0;
+    }
+    .carousel-dot.active {
+      background: var(--accent-violet);
+      width: 20px; border-radius: 4px;
+      box-shadow: 0 0 8px rgba(139,92,246,0.4);
+    }
+    .carousel-dot:hover:not(.active) {
+      background: var(--text-muted);
+    }
+    .carousel-counter {
+      text-align: center; margin-top: 8px;
+      font-size: 11px; color: var(--text-muted); font-weight: 500;
+      font-family: 'JetBrains Mono', monospace;
+    }
+    .carousel-dots-wrap {
+      display: none;
+    }
+    .carousel-dots-wrap.multi {
+      display: block;
+    }
+
     .hd-actions {
       display: flex; gap: 12px; margin-top: 20px;
       max-width: 400px; margin-left: auto; margin-right: auto;
@@ -472,8 +557,34 @@
     .modal-img {
       max-width: 100%; max-height: 75vh; border-radius: var(--radius-xl);
       box-shadow: 0 40px 80px rgba(0,0,0,0.5); object-fit: contain;
+      transition: opacity 0.3s ease;
     }
     .modal-actions { display: flex; gap: 12px; }
+    .modal-nav {
+      position: absolute; top: 50%; transform: translateY(-50%);
+      display: flex; align-items: center; justify-content: space-between;
+      width: calc(100% + 100px); pointer-events: none;
+    }
+    .modal-arrow {
+      width: 44px; height: 44px; border-radius: 50%;
+      background: rgba(255,255,255,0.12); backdrop-filter: blur(10px);
+      border: 1px solid rgba(255,255,255,0.2);
+      color: white; cursor: pointer;
+      display: flex; align-items: center; justify-content: center;
+      transition: all var(--transition); pointer-events: auto;
+    }
+    .modal-arrow:hover { background: rgba(255,255,255,0.25); }
+    .modal-arrow:disabled { opacity: 0.2; pointer-events: none; }
+    .modal-arrow svg { width: 20px; height: 20px; }
+    .modal-counter {
+      position: absolute; top: -12px; left: 50%; transform: translateX(-50%);
+      padding: 4px 14px; border-radius: var(--radius-full);
+      background: rgba(0,0,0,0.6); backdrop-filter: blur(8px);
+      font-size: 12px; font-weight: 600; color: rgba(255,255,255,0.8);
+      font-family: 'JetBrains Mono', monospace;
+      white-space: nowrap;
+    }
+    .modal-counter.hidden { display: none; }
 
     /* ── Duyarlı Tasarım ── */
     @media (max-width: 768px) {
@@ -512,11 +623,17 @@
       .hd-actions { flex-direction: column; }
       .btn-primary, .btn-secondary { padding: 13px 16px; font-size: 13px; min-height: 48px; }
       .hd-resolution { font-size: 11px; }
+      .carousel-arrow { width: 30px; height: 30px; opacity: 1; }
+      .carousel-arrow svg { width: 14px; height: 14px; }
+      .carousel-arrow--prev { left: 6px; }
+      .carousel-arrow--next { right: 6px; }
       .footer { padding: 24px 16px; }
       .footer-links { flex-wrap: wrap; justify-content: center; gap: 16px; }
       .footer-copy { font-size: 10px; }
       .modal-overlay { padding: 12px; }
       .modal-img { border-radius: var(--radius-md); }
+      .modal-nav { width: calc(100% + 40px); }
+      .modal-arrow { width: 36px; height: 36px; }
     }
     @media (max-width: 380px) {
       .brand-text { font-size: 14px; }
@@ -763,21 +880,36 @@
       </div>
     </div>
 
-    <!-- HD Görsel Kartı -->
+    <!-- HD Görsel Kartı (Carousel) -->
     <div class="hd-card">
       <div class="hd-header">
         <div class="hd-header-icon">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><path d="M21 15l-5-5L5 21"/></svg>
         </div>
-        <span class="hd-header-title">Profil Resmi – HD</span>
+        <span class="hd-header-title">Profil Resimleri – HD</span>
+        <span id="hdPicCount" class="hd-pic-count" style="display:none"></span>
       </div>
       <div class="hd-body">
-        <div class="hd-image-wrap" onclick="openModal()">
-          <img id="resHdImg" class="hd-image" src="" alt="HD Profil"/>
-          <div class="hd-overlay">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><path d="M15 3h6v6M14 10l6.1-6.1M9 21H3v-6M10 14l-6.1 6.1"/></svg>
+        <!-- Carousel -->
+        <div class="carousel-container">
+          <div class="carousel-viewport" onclick="openModal()">
+            <div id="carouselTrack" class="carousel-track">
+              <!-- Slaytlar JS ile dinamik eklenir -->
+            </div>
           </div>
+          <button id="carouselPrev" class="carousel-arrow carousel-arrow--prev" onclick="event.stopPropagation(); carouselPrev()">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"/></svg>
+          </button>
+          <button id="carouselNext" class="carousel-arrow carousel-arrow--next" onclick="event.stopPropagation(); carouselNext()">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 6 15 12 9 18"/></svg>
+          </button>
         </div>
+        <!-- Carousel Noktaları -->
+        <div id="carouselDotsWrap" class="carousel-dots-wrap">
+          <div id="carouselDots" class="carousel-dots"></div>
+          <div id="carouselCounter" class="carousel-counter"></div>
+        </div>
+        <!-- İşlem Butonları -->
         <div class="hd-actions">
           <a id="resDownload" href="#" download class="btn-primary">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4M7 10l5 5 5-5M12 15V3"/></svg>
@@ -788,7 +920,7 @@
             Yeni Sekmede Aç
           </a>
         </div>
-        <div class="hd-resolution">1080 × 1080 px · Orijinal Çözünürlük</div>
+        <div id="hdResolution" class="hd-resolution"></div>
       </div>
     </div>
   </section>
@@ -796,8 +928,18 @@
   <!-- ═══════ TAM EKRAN GÖRÜNTÜLEYİCİ ═══════ -->
   <div id="modal" class="modal-overlay" onclick="if(event.target===this)closeModal()">
     <div class="modal-content">
+      <span id="modalCounter" class="modal-counter hidden"></span>
       <button class="modal-close" onclick="closeModal()">✕</button>
       <img id="modalImg" class="modal-img" src="" alt=""/>
+      <!-- Modal Nav Okları -->
+      <div class="modal-nav" id="modalNav" style="display:none">
+        <button class="modal-arrow" id="modalPrev" onclick="modalPrevSlide()">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"/></svg>
+        </button>
+        <button class="modal-arrow" id="modalNext" onclick="modalNextSlide()">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 6 15 12 9 18"/></svg>
+        </button>
+      </div>
       <div class="modal-actions">
         <a id="modalDownload" href="#" download class="btn-primary">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4M7 10l5 5 5-5M12 15V3"/></svg>
@@ -851,6 +993,112 @@
       setTimeout(() => t.classList.remove('active'), 5000);
     }
 
+    // ── Carousel Durumu ──
+    let currentSlide = 0;
+    let slides = []; // { url, original, width, height }
+    let currentUsername = '';
+
+    function buildCarousel(pics) {
+      slides = pics;
+      currentSlide = 0;
+
+      const track = document.getElementById('carouselTrack');
+      const dotsContainer = document.getElementById('carouselDots');
+      const dotsWrap = document.getElementById('carouselDotsWrap');
+      const countBadge = document.getElementById('hdPicCount');
+
+      // Slaytları oluştur
+      track.innerHTML = '';
+      slides.forEach((pic, i) => {
+        const slide = document.createElement('div');
+        slide.className = 'carousel-slide';
+        const resText = (pic.width && pic.height) ? `${pic.width}×${pic.height}` : 'HD';
+        slide.innerHTML = `
+          <img src="${pic.url}" alt="Profil Resmi ${i + 1}" loading="${i === 0 ? 'eager' : 'lazy'}"/>
+          <div class="hd-overlay">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><path d="M15 3h6v6M14 10l6.1-6.1M9 21H3v-6M10 14l-6.1 6.1"/></svg>
+          </div>
+          ${slides.length > 1 ? `<span class="carousel-res-badge">${resText}</span>` : ''}
+        `;
+        track.appendChild(slide);
+      });
+
+      // Çoklu fotoğraf varsa noktaları göster
+      if (slides.length > 1) {
+        dotsWrap.classList.add('multi');
+        countBadge.textContent = `${slides.length} fotoğraf`;
+        countBadge.style.display = 'inline-block';
+
+        // Noktaları oluştur
+        dotsContainer.innerHTML = '';
+        slides.forEach((_, i) => {
+          const dot = document.createElement('button');
+          dot.className = 'carousel-dot' + (i === 0 ? ' active' : '');
+          dot.onclick = (e) => { e.stopPropagation(); goToSlide(i); };
+          dotsContainer.appendChild(dot);
+        });
+      } else {
+        dotsWrap.classList.remove('multi');
+        countBadge.style.display = 'none';
+      }
+
+      updateCarouselUI();
+    }
+
+    function goToSlide(index) {
+      if (index < 0 || index >= slides.length) return;
+      currentSlide = index;
+      updateCarouselUI();
+    }
+
+    function carouselPrev() { goToSlide(currentSlide - 1); }
+    function carouselNext() { goToSlide(currentSlide + 1); }
+
+    function updateCarouselUI() {
+      const track = document.getElementById('carouselTrack');
+      const prevBtn = document.getElementById('carouselPrev');
+      const nextBtn = document.getElementById('carouselNext');
+      const counter = document.getElementById('carouselCounter');
+      const dots = document.querySelectorAll('#carouselDots .carousel-dot');
+
+      // Slayt pozisyonu
+      track.style.transform = `translateX(-${currentSlide * 100}%)`;
+
+      // Ok butonları durumu
+      prevBtn.disabled = currentSlide === 0;
+      nextBtn.disabled = currentSlide >= slides.length - 1;
+
+      // Noktaları güncelle
+      dots.forEach((dot, i) => {
+        dot.classList.toggle('active', i === currentSlide);
+      });
+
+      // Sayaç
+      if (slides.length > 1) {
+        counter.textContent = `${currentSlide + 1} / ${slides.length}`;
+      } else {
+        counter.textContent = '';
+      }
+
+      // HD Çözünürlük bilgisi
+      const pic = slides[currentSlide];
+      const resTxt = (pic.width && pic.height)
+        ? `${pic.width} × ${pic.height} px · Orijinal Çözünürlük`
+        : 'HD · Orijinal Çözünürlük';
+      document.getElementById('hdResolution').textContent = resTxt;
+
+      // İndirme ve link güncelle
+      document.getElementById('resDownload').href = pic.url;
+      document.getElementById('resDownload').download = `${currentUsername}_hd_${currentSlide + 1}.jpg`;
+      document.getElementById('resOpenTab').href = pic.url;
+
+      // Modal da güncelle
+      document.getElementById('modalImg').src = pic.url;
+      document.getElementById('modalDownload').href = pic.url;
+      document.getElementById('modalDownload').download = `${currentUsername}_hd_${currentSlide + 1}.jpg`;
+      document.getElementById('modalOpen').href = pic.url;
+    }
+
     // ── Arama İşlemi ──
     const input = document.getElementById('searchInput');
     input.addEventListener('keydown', e => { if (e.key === 'Enter') search(); });
@@ -878,6 +1126,7 @@
         }
 
         const d = json.data;
+        currentUsername = d.username;
 
         // Profil kartını doldur
         document.getElementById('resAvatar').src = d.profile_pic_url_hd;
@@ -892,17 +1141,11 @@
         document.getElementById('resVerified').style.display = d.is_verified ? 'inline-flex' : 'none';
         document.getElementById('resPrivate').style.display = d.is_private ? 'inline' : 'none';
 
-        // HD görsel
-        document.getElementById('resHdImg').src = d.profile_pic_url_hd;
-        document.getElementById('resDownload').href = d.profile_pic_url_hd;
-        document.getElementById('resDownload').download = d.username + '_hd.jpg';
-        document.getElementById('resOpenTab').href = d.profile_pic_url_hd;
-
-        // Tam ekran görüntüleyici
-        document.getElementById('modalImg').src = d.profile_pic_url_hd;
-        document.getElementById('modalDownload').href = d.profile_pic_url_hd;
-        document.getElementById('modalDownload').download = d.username + '_hd.jpg';
-        document.getElementById('modalOpen').href = d.profile_pic_url_hd;
+        // Çoklu profil fotoğrafları carousel'ini oluştur
+        const pics = (d.profile_pics && d.profile_pics.length > 0)
+          ? d.profile_pics
+          : [{ url: d.profile_pic_url_hd, original: d.profile_pic_original || '', width: 0, height: 0 }];
+        buildCarousel(pics);
 
         loader.classList.remove('active');
         result.classList.add('active');
@@ -921,14 +1164,77 @@
 
     // ── Tam Ekran Görüntüleyici ──
     function openModal() {
-      document.getElementById('modal').classList.add('active');
+      const modal = document.getElementById('modal');
+      const modalNav = document.getElementById('modalNav');
+      const modalCounter = document.getElementById('modalCounter');
+      modal.classList.add('active');
       document.body.style.overflow = 'hidden';
+
+      // Mevcut slaytı göster
+      updateModalSlide();
+
+      // Çoklu ise nav göster
+      if (slides.length > 1) {
+        modalNav.style.display = 'flex';
+        modalCounter.classList.remove('hidden');
+      } else {
+        modalNav.style.display = 'none';
+        modalCounter.classList.add('hidden');
+      }
     }
+
+    function updateModalSlide() {
+      const pic = slides[currentSlide];
+      if (!pic) return;
+      document.getElementById('modalImg').src = pic.url;
+      document.getElementById('modalDownload').href = pic.url;
+      document.getElementById('modalDownload').download = `${currentUsername}_hd_${currentSlide + 1}.jpg`;
+      document.getElementById('modalOpen').href = pic.url;
+
+      // Modal sayacı
+      const counter = document.getElementById('modalCounter');
+      if (slides.length > 1) {
+        counter.textContent = `${currentSlide + 1} / ${slides.length}`;
+      }
+
+      // Ok durumları
+      document.getElementById('modalPrev').disabled = currentSlide === 0;
+      document.getElementById('modalNext').disabled = currentSlide >= slides.length - 1;
+    }
+
+    function modalPrevSlide() {
+      if (currentSlide > 0) {
+        currentSlide--;
+        updateCarouselUI();
+        updateModalSlide();
+      }
+    }
+    function modalNextSlide() {
+      if (currentSlide < slides.length - 1) {
+        currentSlide++;
+        updateCarouselUI();
+        updateModalSlide();
+      }
+    }
+
     function closeModal() {
       document.getElementById('modal').classList.remove('active');
       document.body.style.overflow = '';
     }
-    document.addEventListener('keydown', e => { if (e.key === 'Escape') closeModal(); });
+
+    // Klavye navigasyonu
+    document.addEventListener('keydown', e => {
+      if (e.key === 'Escape') closeModal();
+      const modalActive = document.getElementById('modal').classList.contains('active');
+      if (e.key === 'ArrowLeft') {
+        if (modalActive) modalPrevSlide();
+        else if (document.getElementById('resultSection').classList.contains('active')) carouselPrev();
+      }
+      if (e.key === 'ArrowRight') {
+        if (modalActive) modalNextSlide();
+        else if (document.getElementById('resultSection').classList.contains('active')) carouselNext();
+      }
+    });
 
     // ── Tema Değiştirici ──
     const themeToggle = document.getElementById('themeToggle');
