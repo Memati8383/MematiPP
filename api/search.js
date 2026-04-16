@@ -1,7 +1,6 @@
 const axios = require('axios');
 
 module.exports = async (req, res) => {
-    // Kullanıcı adından geçersiz karakterleri temizle
     const username = (req.query.username || '').replace(/[^a-zA-Z0-9._]/g, '');
     if (!username) return res.status(400).json({ success: false, error: 'Kullanıcı adı gerekli' });
 
@@ -19,11 +18,10 @@ module.exports = async (req, res) => {
         if (response.data?.data?.user) {
             const user = response.data.data.user;
             const hdUrl = user.hd_profile_pic_url_info?.url || user.profile_pic_url_hd || user.profile_pic_url;
-            
-            // Proxy linkini oluştur (/api/proxy dosyamıza yönelecek)
             const proxiedUrl = `/api/proxy?src=${encodeURIComponent(hdUrl)}`;
 
-            res.json({
+            res.setHeader('Content-Type', 'application/json');
+            res.status(200).json({
                 success: true,
                 data: {
                     full_name: user.full_name || username,
@@ -43,9 +41,7 @@ module.exports = async (req, res) => {
         }
     } catch (error) {
         const status = error.response?.status || 500;
-        const msg = status === 404
-            ? 'Kullanıcı bulunamadı'
-            : 'Instagram verisi alınamadı. Lütfen tekrar deneyin.';
+        const msg = status === 404 ? 'Kullanıcı bulunamadı' : 'Instagram verisi alınamadı.';
         res.status(status).json({ success: false, error: msg });
     }
 };
