@@ -15,9 +15,9 @@ app.get('/api/search', async (req, res) => {
     if (!username) return res.status(400).json({ error: 'Username gerekli' });
 
     try {
-        // AllOrigins proxy platformunu kullanarak Instagram engellerini aşmayı deniyoruz
+        // AllOrigins yerine daha stabil olan corsproxy.io kullanıyoruz
         const targetUrl = `https://i.instagram.com/api/v1/users/web_profile_info/?username=${username}`;
-        const proxyUrl = `https://api.allorigins.win/raw?url=${encodeURIComponent(targetUrl)}`;
+        const proxyUrl = `https://corsproxy.io/?${encodeURIComponent(targetUrl)}`;
 
         const response = await axios.get(proxyUrl, {
             headers: {
@@ -27,7 +27,6 @@ app.get('/api/search', async (req, res) => {
             timeout: 15000 
         });
 
-        // Veri yapısını kontrol et (Proxy bazen farklı formatta döndürebilir)
         const userData = response.data?.data?.user;
 
         if (userData) {
@@ -49,15 +48,17 @@ app.get('/api/search', async (req, res) => {
                 }
             });
         } else {
-            res.status(404).json({ success: false, error: 'Kullanıcı bulunamadı veya profil gizli' });
+            // Eğer veri gelmediyse Instagram bizi login sayfasına yönlendirmiş olabilir
+            res.status(403).json({ success: false, error: 'Instagram erişimi reddetti (Giriş gerekli olabilir)' });
         }
     } catch (e) {
         console.error('Proxy Hatası:', e.message);
         const status = e.response?.status || 500;
-        let errorMessage = 'Instagram verisi şu an alınamıyor, lütfen biraz sonra tekrar deneyin.';
+        let errorMessage = 'Instagram sunucularına şu an ulaşılamıyor. Lütfen daha sonra deneyin.';
         
         if (status === 404) errorMessage = 'Kullanıcı bulunamadı';
-        if (status === 429) errorMessage = 'Hız sınırı uyarısı (Proxy de engellenmiş olabilir)';
+        if (status === 429) errorMessage = 'Instagram hız sınırı uyguluyor (Lütfen 5 dk bekleyin)';
+        if (status === 403) errorMessage = 'Instagram erişimi engelledi (IP Bloğu)';
 
         res.status(status).json({ success: false, error: errorMessage });
     }
