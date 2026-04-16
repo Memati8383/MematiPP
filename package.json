@@ -1,0 +1,17 @@
+{
+  "name": "instapp-instagram-profil-resmi-goruntuleyici-scipti",
+  "version": "1.0.0",
+  "description": "**Umut Yılmaz** tarafından oluşturulmuştur · [github.com/umtylmzl](https://github.com/umtylmzl)",
+  "main": "sweetalert2.all.min.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs",
+  "dependencies": {
+    "axios": "^1.15.0",
+    "express": "^5.2.1"
+  }
+}
