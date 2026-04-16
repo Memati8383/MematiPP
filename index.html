@@ -532,8 +532,8 @@
       .bio-link { font-size: 12px; padding: 8px 14px; }
     }
 
-    /* ── Kategori Rozeti ── */
-    .category-badge {
+    /* ── Kategori ve Rozet Stilleri ── */
+    .category-badge, .pronouns-badge, .professional-badge, .joined-recently-badge {
       display: none;
       align-items: center;
       gap: 5px;
@@ -541,20 +541,35 @@
       font-weight: 600;
       padding: 4px 12px;
       border-radius: var(--radius-full);
+      backdrop-filter: blur(8px);
+      transition: all var(--transition);
+      letter-spacing: 0.3px;
+      white-space: nowrap;
+    }
+    .category-badge.active, .pronouns-badge.active, .professional-badge.active, .joined-recently-badge.active { display: inline-flex; }
+
+    .category-badge {
       background: linear-gradient(135deg, rgba(139,92,246,0.15) 0%, rgba(236,72,153,0.10) 100%);
       border: 1px solid rgba(139,92,246,0.2);
       color: var(--accent-violet-light);
-      letter-spacing: 0.3px;
-      white-space: nowrap;
-      backdrop-filter: blur(8px);
-      transition: all var(--transition);
     }
-    .category-badge.active { display: inline-flex; }
-    .category-badge svg {
-      width: 12px; height: 12px;
-      color: var(--accent-violet-light);
-      flex-shrink: 0;
+    .pronouns-badge {
+      background: rgba(16,185,129,0.1);
+      border: 1px solid rgba(16,185,129,0.2);
+      color: var(--accent-emerald);
     }
+    .joined-recently-badge {
+      background: rgba(59,130,246,0.1);
+      border: 1px solid rgba(59,130,246,0.2);
+      color: var(--accent-blue);
+    }
+    .professional-badge {
+      background: linear-gradient(135deg, rgba(245,158,11,0.15) 0%, rgba(236,72,153,0.15) 100%);
+      border: 1px solid rgba(245,158,11,0.2);
+      color: #fbbf24;
+    }
+
+    .category-badge svg { width: 12px; height: 12px; color: inherit; flex-shrink: 0; }
 
     /* ── Kullanıcı ID Rozeti ── */
     .user-id-badge {
@@ -568,42 +583,37 @@
     }
     .user-id-badge.active { display: block; }
 
-    /* ── Bio Link Butonu ── */
-    .bio-link {
-      display: none;
-      align-items: center;
+    /* ── Bio Linkleri Konteyner ── */
+    .bio-links-container {
+      display: flex;
+      flex-wrap: wrap;
       gap: 8px;
       margin-top: 14px;
-      padding: 10px 18px;
+    }
+
+    .bio-link {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 8px 16px;
       border-radius: var(--radius-full);
       background: rgba(59,130,246,0.08);
       border: 1px solid rgba(59,130,246,0.2);
       color: var(--accent-blue);
-      font-size: 13px;
+      font-size: 12px;
       font-weight: 600;
       text-decoration: none;
       transition: all var(--transition);
-      width: fit-content;
-      max-width: 100%;
+      max-width: 240px;
       overflow: hidden;
     }
-    .bio-link.active { display: inline-flex; }
     .bio-link:hover {
       background: rgba(59,130,246,0.15);
       border-color: rgba(59,130,246,0.4);
       transform: translateY(-1px);
-      box-shadow: 0 4px 16px rgba(59,130,246,0.15);
     }
-    .bio-link svg {
-      width: 15px; height: 15px;
-      flex-shrink: 0;
-      color: var(--accent-blue);
-    }
-    .bio-link-text {
-      overflow: hidden;
-      text-overflow: ellipsis;
-      white-space: nowrap;
-    }
+    .bio-link svg { width: 14px; height: 14px; flex-shrink: 0; }
+    .bio-link-text { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 
     /* ── Son Gönderiler Kartı ── */
     .posts-card {
@@ -1081,7 +1091,10 @@
             <span id="resVerified" class="verified-badge" style="display:none">
               <svg viewBox="0 0 24 24"><path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/></svg>
             </span>
+            <span id="resPronouns" class="pronouns-badge" style="display:none"></span>
+            <span id="resJoinedRecently" class="joined-recently-badge" style="display:none">🆕 Yeni Hesap</span>
             <span id="resPrivate" class="private-badge" style="display:none">🔒 Gizli</span>
+            <span id="resProfessional" class="professional-badge" style="display:none">✨ Profesyonel</span>
             <span id="resCategory" class="category-badge">
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M20.59 13.41l-7.17 7.17a2 2 0 01-2.83 0L2 12V2h10l8.59 8.59a2 2 0 010 2.82z"/><line x1="7" y1="7" x2="7.01" y2="7"/></svg>
               <span id="resCategoryText"></span>
@@ -1090,10 +1103,7 @@
           <div id="resUsername" class="profile-username"></div>
           <div id="resUserId" class="user-id-badge"></div>
           <div id="resBio" class="profile-bio"></div>
-          <a id="resBioLink" class="bio-link" href="#" target="_blank" rel="noopener">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M10 13a5 5 0 007.54.54l3-3a5 5 0 00-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 00-7.54-.54l-3 3a5 5 0 007.07 7.07l1.71-1.71"/></svg>
-            <span id="resBioLinkText" class="bio-link-text"></span>
-          </a>
+          <div id="resBioLinks" class="bio-links-container"></div>
         </div>
         <div class="profile-stats">
           <div class="stat">
@@ -1107,6 +1117,10 @@
           <div class="stat">
             <div id="resFollowing" class="stat-value">–</div>
             <div class="stat-label">Takip</div>
+          </div>
+          <div class="stat">
+            <div id="resHighlights" class="stat-value">–</div>
+            <div class="stat-label">Öne Çıkan</div>
           </div>
         </div>
       </div>
@@ -1254,40 +1268,84 @@
         document.getElementById('resVerified').style.display = d.is_verified ? 'inline-flex' : 'none';
         document.getElementById('resPrivate').style.display = d.is_private ? 'inline' : 'none';
 
+        // Zamirler
+        const pronounsEl = document.getElementById('resPronouns');
+        if (d.pronouns && d.pronouns.length > 0) {
+          pronounsEl.textContent = d.pronouns.join('/');
+          pronounsEl.classList.add('active');
+        } else {
+          pronounsEl.classList.remove('active');
+        }
+
+        // Yeni hesap rozeti
+        const joinedEl = document.getElementById('resJoinedRecently');
+        if (d.is_joined_recently) {
+          joinedEl.classList.add('active');
+        } else {
+          joinedEl.classList.remove('active');
+        }
+
+        // Profesyonel hesap rozeti
+        const profEl = document.getElementById('resProfessional');
+        if (d.is_professional_account) {
+          profEl.classList.add('active');
+        } else {
+          profEl.classList.remove('active');
+        }
+
         // Kategori rozeti
         const categoryEl = document.getElementById('resCategory');
         const categoryText = document.getElementById('resCategoryText');
-        if (d.category_name) {
-          categoryText.textContent = d.category_name;
+        const catName = d.category_name || d.business_category_name || d.overall_category_name;
+        if (catName) {
+          categoryText.textContent = catName;
           categoryEl.classList.add('active');
         } else {
           categoryEl.classList.remove('active');
         }
 
+        // Öne çıkanlar istatistiği
+        document.getElementById('resHighlights').textContent = formatCount(d.highlight_reel_count);
+
         // Kullanıcı ID
         const userIdEl = document.getElementById('resUserId');
         if (d.id) {
-          userIdEl.textContent = 'ID: ' + d.id;
+          userIdEl.textContent = 'ID: ' + d.id + (d.fbid ? ` · FBID: ${d.fbid}` : '');
           userIdEl.classList.add('active');
         } else {
           userIdEl.classList.remove('active');
         }
 
-        // Bio link
-        const bioLinkEl = document.getElementById('resBioLink');
-        const bioLinkText = document.getElementById('resBioLinkText');
-        if (d.external_url) {
-          try {
-            const urlObj = new URL(d.external_url);
-            bioLinkText.textContent = urlObj.hostname.replace('www.', '') + urlObj.pathname.replace(/\/$/, '');
-          } catch {
-            bioLinkText.textContent = d.external_url;
-          }
-          bioLinkEl.href = d.external_url;
-          bioLinkEl.classList.add('active');
-        } else {
-          bioLinkEl.classList.remove('active');
+        // Bio linkleri (Çoklu destek)
+        const bioLinksContainer = document.getElementById('resBioLinks');
+        bioLinksContainer.innerHTML = '';
+        
+        const allLinks = d.bio_links || [];
+        // Eğer bio_links boşsa ama external_url varsa onu ekle
+        if (allLinks.length === 0 && d.external_url) {
+          allLinks.push({ url: d.external_url, title: d.external_url });
         }
+
+        allLinks.forEach(link => {
+          let displayTitle = '';
+          try {
+            const urlObj = new URL(link.url);
+            displayTitle = urlObj.hostname.replace('www.', '') + (urlObj.pathname !== '/' ? urlObj.pathname.replace(/\/$/, '') : '');
+          } catch {
+            displayTitle = link.title || link.url;
+          }
+          
+          const a = document.createElement('a');
+          a.className = 'bio-link';
+          a.href = link.url;
+          a.target = '_blank';
+          a.rel = 'noopener';
+          a.innerHTML = `
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M10 13a5 5 0 007.54.54l3-3a5 5 0 00-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 00-7.54-.54l-3 3a5 5 0 007.07 7.07l1.71-1.71"/></svg>
+            <span class="bio-link-text">${displayTitle}</span>
+          `;
+          bioLinksContainer.appendChild(a);
+        });
 
         // HD görsel
         document.getElementById('resHdImg').src = d.profile_pic_url_hd;
