@@ -719,16 +719,38 @@
 
     /* ── Gönderiler boş durumu ── */
     .posts-empty {
-      padding: 40px 24px;
+      padding: 56px 32px;
       text-align: center;
-      color: var(--text-muted);
-      font-size: 14px;
-      font-weight: 500;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 4px;
     }
     .posts-empty-icon {
-      font-size: 32px;
-      margin-bottom: 8px;
-      opacity: 0.6;
+      width: 64px;
+      height: 64px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, rgba(245,158,11,0.12) 0%, rgba(236,72,153,0.08) 100%);
+      border: 1px solid rgba(245,158,11,0.15);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 28px;
+      margin-bottom: 12px;
+    }
+    .posts-empty-title {
+      font-size: 15px;
+      font-weight: 700;
+      color: var(--text-primary);
+      letter-spacing: -0.3px;
+    }
+    .posts-empty-desc {
+      font-size: 13px;
+      color: var(--text-muted);
+      font-weight: 400;
+      max-width: 280px;
+      line-height: 1.5;
     }
 
     /* ── Mobil uyumluluk güncellemeleri ── */
@@ -1389,7 +1411,13 @@
           });
           postsCard.classList.add('active');
         } else if (d.is_private) {
-          postsGrid.innerHTML = '<div class="posts-empty"><div class="posts-empty-icon">🔒</div>Bu hesap gizli – gönderiler görüntülenemiyor</div>';
+          postsGrid.innerHTML = `
+            <div class="posts-empty">
+              <div class="posts-empty-icon">🔒</div>
+              <div class="posts-empty-title">Bu Hesap Gizli</div>
+              <div class="posts-empty-desc">Gönderileri görüntülemek için bu hesabı Instagram'da takip etmeniz gerekiyor.</div>
+            </div>
+          `;
           postsCard.classList.add('active');
         } else {
           postsCard.classList.remove('active');
