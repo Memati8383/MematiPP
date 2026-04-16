@@ -71,8 +71,7 @@ app.get('/api/search', async (req, res) => {
     }
 });
 
-// ── Statik dosyaları sun ──
-app.use(express.static('.'));
+// ── API Sonu ──
 
 // ── Sunucuyu Başlat (Sadece yerel çalıştırmada) ──
 if (require.main === module) {
