@@ -1,66 +1,74 @@
-# MematiPP – Instagram Profil Resmi Görüntüleyici
+# 🔍 MematiPP – Instagram HD Profil Görüntüleyici
 
-**Memati8383** tarafından geliştirilmiştir · [github.com/Memati8383](https://github.com/Memati8383)
-
-Instagram kullanıcılarının profil fotoğraflarını HD kalitesinde görüntüleyen ve indiren modern web uygulaması.
+**MematiPP**, Instagram kullanıcılarının profil fotoğraflarını tam çözünürlükte (HD) görüntülemenizi, indirmenizi ve hesap istatistiklerini takip etmenizi sağlayan modern, hızlı ve kullanıcı dostu bir web uygulamasıdır.
 
 ---
 
-## Özellikler
+## ✨ Özellikler
 
-- 🖼️ Profil fotoğrafını tam/HD çözünürlükte görüntüleme ve indirme
-- 🔒 Gizli profil ve sizi engelleyen hesaplar için de çalışır
-- ✅ Doğrulanmış hesap ve gizli hesap rozeti desteği
-- 📊 Gönderi, takipçi ve takip istatistikleri
-- 🌑 Modern dark theme tasarım
-- 📱 Mobil uyumlu responsive arayüz
-- ⚡ Anlık sonuç – sayfa yenileme yok
+- 🖼️ **Ultra HD Kalite:** Profil fotoğraflarını Instagram'ın sunduğu en yüksek çözünürlükte (1080x1080px) görün.
+- 🔒 **Gizli Profil Desteği:** Gizli hesapların ve sizi engelleyenlerin bile profil fotoğrafına erişebilir.
+- 📊 **Detaylı İstatistikler:** Gönderi sayısı, Takipçi ve Takip edilen sayılarını anında görün.
+- ✅ **Doğrulanmış Hesap Desteği:** Instagram onaylı hesaplar için özel verified rozet gösterimi.
+- 🌑 **Premium Karanlık Tema:** Göz yormayan, modern ve şık Glassmorphism tasarımı.
+- 📱 **Tam Mobil Uyumluluk:** Telefon, tablet ve masaüstünde kusursuz deneyim.
+- ⚡ **Hızlı ve Dinamik:** Sayfa yenilemeden anlık sonuçlar.
+- 🔗 **Sosyal Medya Entegrasyonu:** Şık ve animasyonlu Instagram & GitHub bağlantıları.
 
 ---
 
-## Kurulum
+## 🚀 Kurulum ve Çalıştırma
 
-1. [Node.js](https://nodejs.org/) yükleyin (v18+)
-2. Proje klasörüne gidin ve bağımlılıkları yükleyin:
+### Gereksinimler
+- [Node.js](https://nodejs.org/) (v18 veya üzeri önerilir)
 
-```bash
-npm install
-```
+### Adımlar
 
+1. Projeyi bilgisayarınıza indirin veya klonlayın.
+2. Proje klasöründe terminali açarak bağımlılıkları yükleyin:
+   ```bash
+   npm install
+   ```
 3. Sunucuyu başlatın:
+   ```bash
+   node index.js
+   ```
+4. Tarayıcınızdan şu adrese gidin: `http://localhost:3000` (veya yapılandırdığınız port).
 
-```bash
-node server.js
+_Not: Proje Vercel gibi platformlarda dağıtılmaya hazır hale getirilmiştir._
+
+---
+
+## 📂 Proje Yapısı
+
+```
+├── index.html     # Ana arayüz ve stil dosyaları (Frontend)
+├── index.js       # Sunucu ve API proxy mantığı (Node.js/Express)
+├── vercel.json    # Deployment konfigürasyonu
+└── package.json   # Bağımlılıklar ve scriptler
 ```
 
-4. Tarayıcıdan açın: `http://localhost:8000`
+---
+
+## 🛠️ Kullanılan Teknolojiler
+
+- **Frontend:** Pure HTML5, CSS3 (Vanilla), JavaScript (ES6+)
+- **Backend:** Node.js, Express.js
+- **API:** Instagram Public Web API
+- **Görsel Proxy:** wsrv.nl (Yüksek performanslı görsel işleme)
+- **Tasarım:** Modern Glassmorphism & UIverse Components
 
 ---
 
-## Dosya Yapısı
+## 📜 Lisans
 
-```
-├── index.html     # Arayüz (tek dosya, bağımsız)
-├── server.js      # Node.js backend (Express)
-├── package.json   # Proje bağımlılıkları
-└── README.md      # Bu dosya
-```
+Bu proje **MIT** lisansı altında lisanslanmıştır. Dilediğiniz gibi kullanabilir, değiştirebilir ve kendi projelerinizde referans göstererek dağıtabilirsiniz.
 
 ---
 
-## Teknolojiler
+### İletişim & Geliştirici
+Geliştirici: **Memati8383**  
+GitHub: [@Memati8383](https://github.com/Memati8383)  
+Instagram: [@ferit22901](https://instagram.com/ferit22901)
 
-- **Frontend:** Vanilla HTML/CSS/JS (framework yok, saf performans)
-- **Backend:** Node.js + Express
-- **API:** Instagram Web Profile API
-- **Proxy:** wsrv.nl image proxy
-
----
-
-## Lisans
-
-MIT — dilediğiniz gibi kullanabilir, geliştirebilir ve dağıtabilirsiniz.
-
----
-
-_© 2026 [Memati8383](https://github.com/Memati8383)_
+_© 2026 MematiPP. Tüm hakları saklıdır._
