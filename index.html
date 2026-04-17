@@ -2191,7 +2191,15 @@
             const item = document.createElement('a');
             item.className = 'post-item';
             item.href = 'javascript:void(0)';
-            item.onclick = () => openPostModal(post.shortcode);
+            item.onclick = (e) => {
+              if (e) { e.preventDefault(); e.stopPropagation(); }
+              if (post.shortcode) {
+                openPostModal(post.shortcode);
+              } else {
+                showToast('Bu gönderinin detayları görüntülenemiyor.');
+              }
+              return false;
+            };
             item.innerHTML = `
               <img src="${post.display_url}" alt="Gönderi" loading="lazy"/>
               ${post.is_video ? '<div class="video-indicator"><svg viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg></div>' : ''}
@@ -2400,11 +2408,22 @@
           body: JSON.stringify({ username })
         });
         const json = await res.json();
-        const hlArray = Array.isArray(json.data) ? json.data : 
-                        (json.data?.result || json.data?.items || json.data?.edges || 
-                         json.data?.data?.user?.edge_highlight_reels?.edges || 
-                         json.data?.data?.reels_media || 
-                         (json.data?.data?.user ? [json.data.data.user] : []));
+        
+        let hlArray = [];
+        if (json.success && json.data) {
+          const raw = json.data;
+          if (Array.isArray(raw)) {
+            hlArray = raw;
+          } else if (raw.items && Array.isArray(raw.items)) {
+            hlArray = raw.items;
+          } else if (raw.result && Array.isArray(raw.result)) {
+            hlArray = raw.result;
+          } else if (raw.data?.user?.edge_highlight_reels?.edges) {
+            hlArray = raw.data.user.edge_highlight_reels.edges;
+          } else if (raw.reels_media) {
+            hlArray = Array.isArray(raw.reels_media) ? raw.reels_media : [raw.reels_media];
+          }
+        }
 
         if (!json.success) {
           console.error("Highlights API Error:", json);
@@ -2501,16 +2520,22 @@
             items = resData;
         } else if (resData.reels_media && Array.isArray(resData.reels_media)) {
             items = resData.reels_media.flatMap(r => r.items || [r]);
-        } else if (resData.reels && Array.isArray(resData.reels)) {
-            items = resData.reels.flatMap(r => r.items || [r]);
-        } else if (resData.data?.reels && Array.isArray(resData.data.reels)) {
-            items = resData.data.reels.flatMap(r => r.items || [r]);
+        } else if (resData.reels) {
+            const r = resData.reels;
+            if (Array.isArray(r)) items = r.flatMap(x => x.items || [x]);
+            else items = r.items || [r];
+        } else if (resData.data?.reels) {
+            const r = resData.data.reels;
+            if (Array.isArray(r)) items = r.flatMap(x => x.items || [x]);
+            else items = r.items || [r];
         } else if (resData.items && Array.isArray(resData.items)) {
             items = resData.items;
         } else if (resData.result && Array.isArray(resData.result)) {
             items = resData.result;
         } else if (resData.data?.items && Array.isArray(resData.data.items)) {
             items = resData.data.items;
+        } else if (resData.highlightStories && Array.isArray(resData.highlightStories)) {
+            items = resData.highlightStories;
         }
         
         if (items.length === 0) {
@@ -2625,7 +2650,15 @@
             const a = document.createElement('a');
             a.className = 'post-item';
             a.href = 'javascript:void(0)';
-            a.onclick = () => openPostModal(shortcode);
+            a.onclick = (e) => {
+               if (e) { e.preventDefault(); e.stopPropagation(); }
+               if (shortcode) {
+                 openPostModal(shortcode, 'reel');
+               } else {
+                 showToast('Bu reel görüntülenemiyor.');
+               }
+               return false;
+            };
             a.innerHTML = `
               <img src="${proxyThumb}" alt="Reel" loading="lazy" style="object-fit: cover; aspect-ratio: 9/16;"/>
               <div class="video-indicator">
@@ -2983,10 +3016,12 @@
   </div>
 
   <script>
-  function openPostModal(shortcode) {
+  function openPostModal(shortcode, type = 'p') {
     const container = document.getElementById('postIframeContainer');
     // Instagram resmi embed frame'i
-    container.innerHTML = `<iframe src="https://www.instagram.com/p/${shortcode}/embed" width="100%" height="100%" frameborder="0" scrolling="no" allowtransparency="true"></iframe>`;
+    // Reels için bazen /reels/ daha iyi sonuç verebilir ama /p/ genellikle her şeyi kapsar
+    const path = type === 'reel' ? 'reels' : 'p';
+    container.innerHTML = `<iframe src="https://www.instagram.com/${path}/${shortcode}/embed" width="100%" height="100%" frameborder="0" scrolling="no" allowtransparency="true"></iframe>`;
     document.getElementById('postModalOverlay').classList.add('active');
     document.body.style.overflow = 'hidden';
   }
