@@ -2671,8 +2671,28 @@
 
     // Seçilen Highlight Hikayelerini Yükle
     async function openHighlightViewer(highlightId, title) {
-      const loader = document.getElementById('loader');
-      loader.classList.add('active'); // Sayfada kısa loader gösterelim
+      // Modalı hemen açarak kullanıcıya tepki verelim
+      const overlay = document.getElementById('storyViewer');
+      overlay.classList.add('active');
+      document.body.style.overflow = 'hidden';
+      
+      // Geçici başlık ve avatar ayarla
+      document.getElementById('storyViewerAvatar').src = cachedAvatar;
+      document.getElementById('storyViewerUsername').textContent = title;
+      document.getElementById('storyViewerTime').textContent = 'Yükleniyor...';
+      
+      const mediaContainer = document.getElementById('storyViewerMedia');
+      mediaContainer.innerHTML = `
+        <div style="display:flex; flex-direction:column; align-items:center; justify-content:center; height:100%; gap:20px; color:rgba(255,255,255,0.7);">
+          <div class="loader-spinner" style="display:block; width:50px; height:50px; border-width:4px; border-top-color:#38bdf8;"></div>
+          <span style="font-size:14px; font-weight:600; letter-spacing:0.5px;">Hikayeler Hazırlanıyor...</span>
+        </div>
+      `;
+      mediaContainer.classList.add('loading');
+      
+      // Progress bar ve diğer her şeyi temizle
+      document.getElementById('storyProgressContainer').innerHTML = '';
+      document.getElementById('storyInfoTags').innerHTML = '';
       
       try {
         const res = await fetch('/api/instagram/highlightStories', {
@@ -2682,19 +2702,15 @@
         });
         const json = await res.json();
         
-        loader.classList.remove('active');
-
         if (!json.success || !json.data) {
           showToast('Öne çıkan hikayeler yüklenemedi.');
+          closeStoryViewer();
           return;
         }
 
-        // json.data formatı RapidAPI instagram120 yapısına göre ayarlanır
         const resData = json.data || {};
         let items = [];
         
-        console.log("Highlight Stories Raw Data:", resData);
-
         if (Array.isArray(resData)) {
             items = resData;
         } else if (resData.reels_media && Array.isArray(resData.reels_media)) {
@@ -2719,17 +2735,14 @@
         
         if (items.length === 0) {
           showToast('Bu öne çıkanda hikaye bulunamadı.');
-          loader.classList.remove('active');
+          closeStoryViewer();
           return;
         }
 
-        // storiesData global nesnesini bu highlight ile güncelle
         storiesData = items.map((item, idx) => {
           const story = item.node || item;
           if (!story) return null;
-
           const isVideo = story.media_type === 2 || story.media_type === 'video' || !!story.video_versions;
-          
           let rawUrl = '';
           if (isVideo) {
               const v = story.video_versions || [];
@@ -2738,13 +2751,10 @@
               const c = (story.image_versions2?.candidates) || story.image_versions || [];
               rawUrl = (c[0]?.url || c[0]) || story.image_url || '';
           }
-
           if (!rawUrl) rawUrl = story.display_url || story.url || '';
           if (!rawUrl) return null;
-
           const c = (story.image_versions2?.candidates) || story.image_versions || [];
           const thumbUrl = c[c.length - 1]?.url || story.thumbnail_url || rawUrl;
-
           return {
               id: story.id || story.pk || `hl_${idx}`,
               url: `/api/proxy?src=${encodeURIComponent(rawUrl)}&type=${isVideo ? 'video' : 'image'}`,
@@ -2757,15 +2767,18 @@
         }).filter(Boolean);
 
         if (storiesData.length > 0) {
-          cachedUsername = title; // Başlığı isim olarak gösterelim
-          openStoryViewer(0);
+          cachedUsername = title;
+          storyPaused = false;
+          buildProgressBars();
+          showStory(0);
         } else {
           showToast('Hikaye formatı okunamadı.');
+          closeStoryViewer();
         }
 
       } catch (err) {
-        loader.classList.remove('active');
         showToast('Sunucu bağlantı hatası.');
+        closeStoryViewer();
         console.error(err);
       }
     }
