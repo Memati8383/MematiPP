@@ -1878,6 +1878,32 @@
       </div>
     </div>
 
+    <!-- ═══════ HIGHLIGHTS KARTI ═══════ -->
+    <div id="highlightsCard" class="stories-card">
+      <div class="stories-header">
+        <div class="stories-header-left">
+          <div class="stories-header-icon" style="background: linear-gradient(135deg, #f59e0b, #d97706); box-shadow: 0 4px 15px rgba(245, 158, 11, 0.4);">
+            <svg viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+          </div>
+          <span class="stories-header-title">Öne Çıkanlar</span>
+        </div>
+      </div>
+      <div id="highlightsContent">
+        <!-- Loading / Grid / Empty durumları buraya JS ile eklenir -->
+      </div>
+    </div>
+
+    <!-- ═══════ REELS KARTI ═══════ -->
+    <div id="reelsCard" class="posts-card">
+      <div class="posts-header">
+        <div class="posts-header-icon" style="background: rgba(236, 72, 153, 0.15); color: #ec4899;">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><polygon points="23 7 16 12 23 17 23 7"></polygon><rect x="1" y="5" width="15" height="14" rx="2" ry="2"></rect></svg>
+        </div>
+        <span class="posts-header-title">Reels Videoları</span>
+      </div>
+      <div id="reelsGrid" class="posts-grid"></div>
+    </div>
+
     <!-- Son Gönderiler -->
     <div id="postsCard" class="posts-card">
       <div class="posts-header">
@@ -2195,6 +2221,8 @@
         // ── Stories Yükle ──
         if (d.id) {
           loadStories(d.id, d.username, d.profile_pic_url_hd);
+          loadHighlights(d.username);
+          loadReels(d.username);
         }
 
       } catch (err) {
@@ -2337,6 +2365,219 @@
           </div>
         `;
         countBadge.textContent = '–';
+      }
+    }
+
+    // ── Highlights (Öne Çıkanlar) Yükle ──
+    async function loadHighlights(username) {
+      const card = document.getElementById('highlightsCard');
+      const content = document.getElementById('highlightsContent');
+      
+      card.classList.add('active');
+      content.innerHTML = `
+        <div class="stories-loading">
+          <div class="loader-spinner"></div>
+          Öne Çıkanlar yükleniyor…
+        </div>
+      `;
+
+      try {
+        const res = await fetch('/api/instagram/highlights', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ username })
+        });
+        const json = await res.json();
+
+        if (!json.success || !json.data || json.data.length === 0) {
+          content.innerHTML = `
+            <div class="stories-empty">
+              <div class="stories-empty-icon">⭐</div>
+              <div class="stories-empty-title">Öne Çıkan Yok</div>
+              <div class="stories-empty-desc">Bu kullanıcının öne çıkan hikayesi bulunmuyor.</div>
+            </div>
+          `;
+          return;
+        }
+
+        let gridHTML = '<div class="stories-grid">';
+        json.data.forEach((hl) => {
+          // highlight data mapping (rapidapi genelde {id, title, cover_media: {cropped_image_version: {url}}})
+          const hlId = hl.id || hl.node?.id;
+          const hlTitle = hl.title || hl.node?.title || 'Öne Çıkan';
+          const hlCoverStr = hl.cover_media?.cropped_image_version?.url || hl.node?.cover_media?.cropped_image_version?.url || hl.cover_url || '';
+          const thumbSrc = `/api/proxy?src=${encodeURIComponent(hlCoverStr)}`;
+
+          if(hlId && hlCoverStr) {
+            gridHTML += `
+              <div class="story-thumb" onclick="openHighlightViewer('${hlId}', '${hlTitle.replace(/'/g, "'")}')" title="${hlTitle}">
+                <div class="story-thumb-ring-wrap" style="padding: 1px;">
+                  <div class="story-thumb-ring" style="background:#555; padding:2px;">
+                    <img class="story-thumb-img" src="${thumbSrc}" alt="${hlTitle}" loading="lazy"/>
+                  </div>
+                </div>
+                <span class="story-thumb-label" style="text-transform: none;">${hlTitle}</span>
+              </div>
+            `;
+          }
+        });
+        gridHTML += '</div>';
+        content.innerHTML = gridHTML;
+        
+        // Yeniden yatay scroll ekle
+        setTimeout(initTrayScroll, 100);
+
+      } catch (err) {
+        console.error('Highlights yüklenirken hata:', err);
+        content.innerHTML = `
+          <div class="stories-empty">
+            <div class="stories-empty-icon">⚠️</div>
+            <div class="stories-empty-title">Yüklenemedi</div>
+            <div class="stories-empty-desc">Erişim engeli olabilir.</div>
+          </div>
+        `;
+      }
+    }
+
+    // Seçilen Highlight Hikayelerini Yükle
+    async function openHighlightViewer(highlightId, title) {
+      const loader = document.getElementById('loader');
+      loader.classList.add('active'); // Sayfada kısa loader gösterelim
+      
+      try {
+        const res = await fetch('/api/instagram/highlightStories', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ highlightId: 'highlight:' + highlightId.replace('highlight:', '') })
+        });
+        const json = await res.json();
+        
+        loader.classList.remove('active');
+
+        if (!json.success || !json.data) {
+          showToast('Öne çıkan hikayeler yüklenemedi.');
+          return;
+        }
+
+        // json.data formatı RapidAPI instagram120 yapısına göre ayarlanır
+        const items = Array.isArray(json.data) ? json.data : (json.data.items || []);
+        
+        if (items.length === 0) {
+          showToast('Bu öne çıkanda hikaye bulunamadı.');
+          return;
+        }
+
+        // storiesData global nesnesini bu highlight ile güncelle
+        storiesData = items.map((story, idx) => {
+          const isVideo = story.media_type === 2 || story.media_type === 'video' || !!story.video_versions;
+          
+          let rawUrl = '';
+          if (isVideo) {
+              const v = story.video_versions || [];
+              rawUrl = (v[0]?.url || v[0]) || story.video_url || '';
+          } else {
+              const c = story.image_versions2?.candidates || [];
+              rawUrl = (c[0]?.url || c[0]) || story.image_url || '';
+          }
+
+          if (!rawUrl) rawUrl = story.display_url || story.url || '';
+
+          return {
+              id: story.id || story.pk || `hl_${idx}`,
+              url: `/api/proxy?src=${encodeURIComponent(rawUrl)}&type=${isVideo ? 'video' : 'image'}`,
+              original_url: rawUrl,
+              taken_at: story.taken_at || Math.floor(Date.now() / 1000),
+              media_type: isVideo ? 'video' : 'image',
+              duration: story.video_duration || 15
+          };
+        }).filter(s => s.original_url);
+
+        if (storiesData.length > 0) {
+          cachedUsername = title; // Başlığı isim olarak gösterelim
+          openStoryViewer(0);
+        } else {
+          showToast('Hikaye formatı okunamadı.');
+        }
+
+      } catch (err) {
+        loader.classList.remove('active');
+        showToast('Sunucu bağlantı hatası.');
+        console.error(err);
+      }
+    }
+
+    // ── Reels (Kısa Videolar) Yükle ──
+    async function loadReels(username) {
+      const card = document.getElementById('reelsCard');
+      const grid = document.getElementById('reelsGrid');
+      
+      card.classList.add('active');
+      grid.innerHTML = `<div class="posts-empty" style="padding: 20px;"><div class="loader-spinner"></div></div>`;
+
+      try {
+        const res = await fetch('/api/instagram/reels', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ username, maxId: "" })
+        });
+        const json = await res.json();
+
+        grid.innerHTML = '';
+        
+        let reelsArray = [];
+        if (json.data && Array.isArray(json.data.items)) {
+          reelsArray = json.data.items;
+        } else if (Array.isArray(json.data)) {
+          reelsArray = json.data;
+        }
+
+        if (reelsArray.length > 0) {
+          reelsArray.forEach(item => {
+            const media = item.media || item;
+            const shortcode = media.code || media.shortcode;
+            if(!shortcode) return;
+
+            const c = media.image_versions2?.candidates || [];
+            const displayUrl = c[0]?.url || media.display_url || media.thumbnail_url;
+            if(!displayUrl) return;
+
+            const proxyThumb = `/api/proxy?src=${encodeURIComponent(displayUrl)}`;
+            const playCount = media.play_count || 0;
+            const likeCount = media.like_count || 0;
+
+            const a = document.createElement('a');
+            a.className = 'post-item';
+            a.href = `https://www.instagram.com/reel/${shortcode}/`;
+            a.target = '_blank';
+            a.rel = 'noopener';
+            a.innerHTML = `
+              <img src="${proxyThumb}" alt="Reel" loading="lazy" style="object-fit: cover; aspect-ratio: 9/16;"/>
+              <div class="video-indicator">
+                <svg viewBox="0 0 24 24"><path d="M8 5v14l11-7z" fill="white"/></svg>
+              </div>
+              <div class="post-overlay" style="flex-direction: column; gap: 8px;">
+                <div class="post-stat">
+                   <svg viewBox="0 0 24 24" fill="white"><path d="M8 5v14l11-7z"/></svg> ${formatCount(playCount)}
+                </div>
+                <div class="post-stat">
+                  <svg viewBox="0 0 24 24" fill="white"><path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/></svg> ${formatCount(likeCount)}
+                </div>
+              </div>
+            `;
+            grid.appendChild(a);
+          });
+        } else {
+          grid.innerHTML = `
+            <div class="posts-empty">
+              <div class="posts-empty-icon">🎬</div>
+              <div class="posts-empty-title">Reel Yok</div>
+              <div class="posts-empty-desc">Kullanıcıya ait Reels videosu bulunamadı.</div>
+            </div>
+          `;
+        }
+      } catch (err) {
+        console.error('Reels hatası:', err);
+        grid.innerHTML = `<div class="posts-empty">Yüklenirken hata oluştu.</div>`;
       }
     }
 

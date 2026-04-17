@@ -2,6 +2,8 @@ const express = require('express');
 const axios = require('axios');
 const app = express();
 
+app.use(express.json()); // POST body ayrıştırması için
+
 // ── Proxy API ──
 app.get('/api/proxy', (req, res) => {
     const src = req.query.src;
@@ -251,5 +253,113 @@ app.get('/api/stories', async (req, res) => {
     }
 });
 
+// ── EKSİK OLAN RAPIDAPI ENDPOINTLERİ (Kullanıcı Talebi Üzerine Eklendi) ──
+app.use(express.json());
+const RAPIDAPI_HEADERS = {
+    'x-rapidapi-key': '559e13debcmsha87285859697ed6p1f2ea7jsn8e5af5d51f55',
+    'x-rapidapi-host': 'instagram120.p.rapidapi.com',
+    'Content-Type': 'application/json'
+};
+const RAPIDAPI_BASE = 'https://instagram120.p.rapidapi.com/api/instagram';
+
+app.get('/api/instagram/get', async (req, res) => {
+    try {
+        const response = await axios.get(`${RAPIDAPI_BASE}/get`, { headers: RAPIDAPI_HEADERS });
+        res.json({ success: true, data: response.data });
+    } catch (e) {
+        res.status(e.response?.status || 500).json({ success: false, error: e.message, details: e.response?.data });
+    }
+});
+
+app.get('/api/instagram/hls', async (req, res) => {
+    try {
+        const response = await axios.get(`${RAPIDAPI_BASE}/hls`, { headers: RAPIDAPI_HEADERS });
+        res.json({ success: true, data: response.data });
+    } catch (e) {
+        res.status(e.response?.status || 500).json({ success: false, error: e.message, details: e.response?.data });
+    }
+});
+
+app.post('/api/instagram/links', async (req, res) => {
+    try {
+        const response = await axios.post(`${RAPIDAPI_BASE}/links`, { url: req.body.url }, { headers: RAPIDAPI_HEADERS });
+        res.json({ success: true, data: response.data });
+    } catch (e) {
+        res.status(e.response?.status || 500).json({ success: false, error: e.message, details: e.response?.data });
+    }
+});
+
+app.post('/api/instagram/profile', async (req, res) => {
+    try {
+        const response = await axios.post(`${RAPIDAPI_BASE}/profile`, { username: req.body.username }, { headers: RAPIDAPI_HEADERS });
+        res.json({ success: true, data: response.data });
+    } catch (e) {
+        res.status(e.response?.status || 500).json({ success: false, error: e.message, details: e.response?.data });
+    }
+});
+
+app.post('/api/instagram/story', async (req, res) => {
+    try {
+        const response = await axios.post(`${RAPIDAPI_BASE}/story`, { username: req.body.username, storyId: req.body.storyId }, { headers: RAPIDAPI_HEADERS });
+        res.json({ success: true, data: response.data });
+    } catch (e) {
+        res.status(e.response?.status || 500).json({ success: false, error: e.message, details: e.response?.data });
+    }
+});
+
+app.post('/api/instagram/highlights', async (req, res) => {
+    try {
+        const response = await axios.post(`${RAPIDAPI_BASE}/highlights`, { username: req.body.username }, { headers: RAPIDAPI_HEADERS });
+        res.json({ success: true, data: response.data });
+    } catch (e) {
+        res.status(e.response?.status || 500).json({ success: false, error: e.message, details: e.response?.data });
+    }
+});
+
+app.post('/api/instagram/highlightStories', async (req, res) => {
+    try {
+        const response = await axios.post(`${RAPIDAPI_BASE}/highlightStories`, { highlightId: req.body.highlightId }, { headers: RAPIDAPI_HEADERS });
+        res.json({ success: true, data: response.data });
+    } catch (e) {
+        res.status(e.response?.status || 500).json({ success: false, error: e.message, details: e.response?.data });
+    }
+});
+
+app.post('/api/instagram/userInfo', async (req, res) => {
+    try {
+        const response = await axios.post(`${RAPIDAPI_BASE}/userInfo`, { username: req.body.username }, { headers: RAPIDAPI_HEADERS });
+        res.json({ success: true, data: response.data });
+    } catch (e) {
+        res.status(e.response?.status || 500).json({ success: false, error: e.message, details: e.response?.data });
+    }
+});
+
+app.post('/api/instagram/mediaByShortcode', async (req, res) => {
+    try {
+        // mediaByshortcode or mediaByShortcode (both versions are commonly supported depending on RapidAPI config, keeping standard here but forwarding properly)
+        const response = await axios.post(`${RAPIDAPI_BASE}/mediaByshortcode`, { shortcode: req.body.shortcode }, { headers: RAPIDAPI_HEADERS });
+        res.json({ success: true, data: response.data });
+    } catch (e) {
+        res.status(e.response?.status || 500).json({ success: false, error: e.message, details: e.response?.data });
+    }
+});
+
+app.post('/api/instagram/reels', async (req, res) => {
+    try {
+        const response = await axios.post(`${RAPIDAPI_BASE}/reels`, { username: req.body.username, maxId: req.body.maxId || "" }, { headers: RAPIDAPI_HEADERS });
+        res.json({ success: true, data: response.data });
+    } catch (e) {
+        res.status(e.response?.status || 500).json({ success: false, error: e.message, details: e.response?.data });
+    }
+});
+
+app.post('/api/instagram/posts', async (req, res) => {
+    try {
+        const response = await axios.post(`${RAPIDAPI_BASE}/posts`, { username: req.body.username, maxId: req.body.maxId || "" }, { headers: RAPIDAPI_HEADERS });
+        res.json({ success: true, data: response.data });
+    } catch (e) {
+        res.status(e.response?.status || 500).json({ success: false, error: e.message, details: e.response?.data });
+    }
+});
 
 module.exports = app;
