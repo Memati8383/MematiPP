@@ -1951,7 +1951,7 @@
       countBadge.textContent = '';
 
       try {
-        const res = await fetch(`/api/stories?userId=${userId}`);
+        const res = await fetch(`/api/stories?username=${encodeURIComponent(username)}`);
         const json = await res.json();
 
         if (!json.success || !json.data || json.data.length === 0) {

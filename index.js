@@ -97,4 +97,77 @@ app.get('/api/search', async (req, res) => {
     }
 });
 
+// ── Stories API ──
+app.get('/api/stories', async (req, res) => {
+    const username = (req.query.username || '').replace(/[^a-zA-Z0-9._]/g, '');
+    if (!username) return res.status(400).json({ success: false, error: 'Username gerekli' });
+
+    try {
+        // Kullanıcının sağladığı RapidAPI bilgilerini kullanıyoruz
+        const response = await axios.post('https://instagram120.p.rapidapi.com/api/instagram/stories', {
+            username: username,
+            maxId: ""
+        }, {
+            headers: {
+                'x-rapidapi-key': '559e13debcmsha87285859697ed6p1f2ea7jsn8e5af5d51f55',
+                'x-rapidapi-host': 'instagram120.p.rapidapi.com',
+                'Content-Type': 'application/json'
+            },
+            timeout: 15000
+        });
+
+        const stories = response.data?.data || [];
+        
+        // Veriyi frontend formatına dönüştür
+        const formattedStories = stories.map(story => {
+            try {
+                const isVideo = story.media_type === 2 || !!story.video_versions;
+                
+                // Medya URL'sini belirle
+                let rawUrl = '';
+                if (isVideo) {
+                    const versions = story.video_versions || [];
+                    rawUrl = versions[0]?.url || versions[0] || '';
+                } else {
+                    const candidates = story.image_versions2?.candidates || [];
+                    rawUrl = candidates[0]?.url || candidates[0] || '';
+                }
+
+                if (!rawUrl) rawUrl = story.url || '';
+
+                const candidates = story.image_versions2?.candidates || [];
+                const thumbUrl = candidates[candidates.length - 1]?.url || story.thumbnail_url || rawUrl;
+
+                return {
+                    id: story.id,
+                    url: `/api/proxy?src=${encodeURIComponent(rawUrl)}`,
+                    original_url: rawUrl,
+                    thumbnail_url: `/api/proxy?src=${encodeURIComponent(thumbUrl)}`,
+                    taken_at: story.taken_at || story.created_at || Math.floor(Date.now() / 1000),
+                    media_type: isVideo ? 'video' : 'image',
+                    duration: story.video_duration || 15,
+                    mentions: (story.reel_mentions || []).map(m => (m.user?.username || m.username || '')).filter(Boolean),
+                    hashtags: (story.story_hashtags || []).map(h => (h.hashtag?.name || h.name || '')).filter(Boolean)
+                };
+            } catch (err) {
+                console.error('Story map error:', err);
+                return null;
+            }
+        }).filter(Boolean);
+
+        res.json({
+            success: true,
+            data: formattedStories
+        });
+
+    } catch (e) {
+        console.error('Stories RapidAPI Hatası:', e.message);
+        // Eğer 404 ise muhtemelen hikaye yok veya kullanıcı bulunamadı
+        if (e.response?.status === 404) {
+            return res.json({ success: true, data: [] });
+        }
+        res.status(500).json({ success: false, error: 'Hikayeler şu an alınamıyor.' });
+    }
+});
+
 module.exports = app;
