@@ -8,5 +8,10 @@
     { "src": "/api/(.*)", "dest": "index.js" },
     { "src": "/", "dest": "index.html" },
     { "src": "/(.*)", "dest": "/$1" }
-  ]
+  ],
+  "functions": {
+    "index.js": {
+      "maxDuration": 60
+    }
+  }
 }

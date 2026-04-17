@@ -2388,10 +2388,20 @@
           body: JSON.stringify({ username })
         });
         const json = await res.json();
+        const hlArray = Array.isArray(json.data) ? json.data : (json.data?.result || json.data?.items || json.data?.edges || []);
 
-        const hlArray = Array.isArray(json.data) ? json.data : (json.data?.result || json.data?.items || []);
+        if (!json.success) {
+          content.innerHTML = `
+            <div class="stories-empty">
+              <div class="stories-empty-icon">⚠️</div>
+              <div class="stories-empty-title">Sunucu Hatası</div>
+              <div class="stories-empty-desc">${json.error || 'Highlights verisi çekilemedi.'}</div>
+            </div>
+          `;
+          return;
+        }
 
-        if (!json.success || hlArray.length === 0) {
+        if (hlArray.length === 0) {
           content.innerHTML = `
             <div class="stories-empty">
               <div class="stories-empty-icon">⭐</div>
@@ -2529,6 +2539,17 @@
         let reelsArray = [];
         const resData = json.data || {};
         
+        if (!json.success) {
+          grid.innerHTML = `
+            <div class="posts-empty">
+              <div class="posts-empty-icon">⚠️</div>
+              <div class="posts-empty-title">Hata</div>
+              <div class="posts-empty-desc">${json.error || 'API Hatası: Reels yüklenemedi.'}</div>
+            </div>
+          `;
+          return;
+        }
+
         if (Array.isArray(resData)) {
           reelsArray = resData;
         } else if (Array.isArray(resData.items)) {
@@ -2545,7 +2566,7 @@
             const shortcode = media.code || media.shortcode;
             if(!shortcode) return;
 
-            const c = media.image_versions2?.candidates || [];
+            const c = media.image_versions2?.candidates || media.image_versions?.candidates || [];
             const displayUrl = c[0]?.url || media.display_url || media.thumbnail_url;
             if(!displayUrl) return;
 
