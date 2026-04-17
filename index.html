@@ -2783,9 +2783,16 @@
       document.body.style.overflow = '';
       clearTimeout(storyTimer);
 
-      // Videoyu durdur
-      const video = document.querySelector('#storyViewerMedia video');
-      if (video) { video.pause(); video.src = ''; }
+      // Tüm videoları bul ve tamamen yok et (Ses kalmaması için)
+      const videos = document.querySelectorAll('#storyViewerMedia video');
+      videos.forEach(v => {
+        v.pause();
+        v.muted = true;
+        v.src = '';
+        v.load();
+        v.remove();
+      });
+      document.getElementById('storyViewerMedia').innerHTML = '';
     }
 
     // ── Progress Bars Oluştur ──
@@ -2848,13 +2855,15 @@
       // Media göster
       const mediaContainer = document.getElementById('storyViewerMedia');
       
-      // Önceki videoyu durdur ve temizle (Ses çakışmasını önlemek için)
-      const oldVideo = mediaContainer.querySelector('video');
-      if (oldVideo) {
-        oldVideo.pause();
-        oldVideo.removeAttribute('src');
-        oldVideo.load();
-      }
+      // Önceki tüm medyaları tamamen temizle (Ses çakışmasını kesin önlemek için)
+      const allVideos = mediaContainer.querySelectorAll('video');
+      allVideos.forEach(v => {
+        v.pause();
+        v.muted = true;
+        v.src = '';
+        v.load();
+        v.remove();
+      });
       mediaContainer.innerHTML = '';
       
       mediaContainer.classList.remove('loaded');
@@ -3122,6 +3131,16 @@
   }
   function closePostModal() {
     document.getElementById('postModalOverlay').classList.remove('active');
+    
+    // Videoları durdur
+    const videos = document.querySelectorAll('#postIframeContainer video');
+    videos.forEach(v => {
+      v.pause();
+      v.muted = true;
+      v.src = '';
+      v.remove();
+    });
+    
     document.getElementById('postIframeContainer').innerHTML = '';
     document.body.style.overflow = '';
   }
