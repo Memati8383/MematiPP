@@ -16,80 +16,84 @@
        Geliştirici: Memati8383 (https://github.com/Memati8383)
     ═══════════════════════════════════════════════════════ */
     :root {
-      --bg-primary: #0a0a0f;
-      --bg-secondary: #12121a;
-      --bg-card: #16161f;
-      --bg-card-hover: #1c1c28;
-      --bg-input: #1a1a26;
-      --border: #2a2a3a;
-      --border-focus: #8b5cf6;
-      --text-primary: #f0f0f5;
-      --text-secondary: #9090a8;
-      --text-muted: #606078;
+      /* Colors & Backgrounds */
+      --bg-gradient: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      --bg-glass: rgba(255, 255, 255, 0.1);
+      --bg-glass-hover: rgba(255, 255, 255, 0.15);
+      --bg-input: rgba(255, 255, 255, 0.08);
+      
+      /* Borders & Effects */
+      --border-glass: 1px solid rgba(255, 255, 255, 0.2);
+      --border-glass-focus: 1px solid rgba(255, 255, 255, 0.4);
+      --glass-blur: blur(15px);
+      
+      /* Typography */
+      --text-primary: #ffffff;
+      --text-secondary: #e0e0e0;
+      --text-muted: #b0b0b0;
+      
+      /* Accents */
       --accent-violet: #8b5cf6;
       --accent-violet-light: #a78bfa;
       --accent-pink: #ec4899;
       --accent-blue: #3b82f6;
       --accent-emerald: #10b981;
-      --gradient-main: linear-gradient(135deg, #8b5cf6 0%, #ec4899 50%, #f59e0b 100%);
-      --gradient-card: linear-gradient(135deg, rgba(139,92,246,0.08) 0%, rgba(236,72,153,0.05) 100%);
-      --gradient-glow: radial-gradient(600px circle at var(--mouse-x, 50%) var(--mouse-y, 50%), rgba(139,92,246,0.06), transparent 40%);
-      --shadow-lg: 0 20px 60px -12px rgba(0,0,0,0.6);
-      --shadow-glow: 0 0 40px rgba(139,92,246,0.15);
-      --radius-sm: 8px;
-      --radius-md: 12px;
-      --radius-lg: 16px;
-      --radius-xl: 20px;
-      --radius-2xl: 24px;
+      
+      /* Gradients & Shadows */
+      --gradient-main: linear-gradient(135deg, #a78bfa 0%, #f472b6 100%);
+      --shadow-glass: 0 8px 32px 0 rgba(31, 38, 135, 0.15);
+      --shadow-premium: 0 24px 60px rgba(0, 0, 0, 0.2);
+      --shadow-soft: 0 4px 20px rgba(0, 0, 0, 0.1);
+      
+      /* Layout & Spacing */
+      --radius-sm: 12px;
+      --radius-md: 18px;
+      --radius-lg: 24px;
+      --radius-xl: 32px;
+      --radius-2xl: 40px;
       --radius-full: 9999px;
-      --transition: 0.2s cubic-bezier(0.4, 0, 0.2, 1);
-      --navbar-bg: rgba(10,10,15,0.75);
-      --navbar-border: rgba(42,42,58,0.5);
-      --ambient-1: rgba(139,92,246,0.12);
-      --ambient-2: rgba(236,72,153,0.08);
-      --ambient-3: rgba(59,130,246,0.06);
+      --padding-container: 40px;
+      
+      /* Interaction */
+      --transition: 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+      --navbar-bg: rgba(255, 255, 255, 0.05);
+      --navbar-border: rgba(255, 255, 255, 0.1);
     }
 
-    /* ── Açık Tema ── */
+    /* ── Light Mode Glass ── */
     [data-theme="light"] {
-      --bg-primary: #f5f5f9;
-      --bg-secondary: #eeeef3;
-      --bg-card: #ffffff;
-      --bg-card-hover: #f8f8fc;
-      --bg-input: #ffffff;
-      --border: #dcdce6;
-      --border-focus: #8b5cf6;
+      --bg-gradient: linear-gradient(135deg, #e0c3fc 0%, #8ec5fc 100%);
+      --bg-glass: rgba(255, 255, 255, 0.45);
+      --bg-glass-hover: rgba(255, 255, 255, 0.55);
+      --bg-input: rgba(255, 255, 255, 0.7);
+      --border-glass: 1px solid rgba(255, 255, 255, 0.5);
       --text-primary: #1a1a2e;
-      --text-secondary: #5a5a78;
-      --text-muted: #9090a8;
-      --shadow-lg: 0 20px 60px -12px rgba(0,0,0,0.1);
-      --shadow-glow: 0 0 40px rgba(139,92,246,0.08);
-      --navbar-bg: rgba(255,255,255,0.8);
-      --navbar-border: rgba(220,220,230,0.8);
-      --ambient-1: rgba(139,92,246,0.06);
-      --ambient-2: rgba(236,72,153,0.04);
-      --ambient-3: rgba(59,130,246,0.03);
+      --text-secondary: #4a4a6e;
+      --text-muted: #7a7a9a;
+      --shadow-glass: 0 8px 32px 0 rgba(0, 0, 0, 0.08);
+      --navbar-bg: rgba(255, 255, 255, 0.4);
+      --navbar-border: rgba(255, 255, 255, 0.5);
     }
 
     * { margin: 0; padding: 0; box-sizing: border-box; }
     html { scroll-behavior: smooth; }
 
     body {
-      font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
-      background: var(--bg-primary);
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      background: var(--bg-gradient);
+      background-attachment: fixed;
       color: var(--text-primary);
       min-height: 100vh;
       overflow-x: hidden;
       -webkit-font-smoothing: antialiased;
+      transition: background 0.8s ease;
     }
 
     /* ── Ortam Arka Planı ── */
     .ambient-bg {
-      position: fixed; inset: 0; z-index: 0; pointer-events: none;
-      background:
-        radial-gradient(ellipse 80% 50% at 20% 0%, var(--ambient-1) 0%, transparent 50%),
-        radial-gradient(ellipse 60% 40% at 80% 10%, var(--ambient-2) 0%, transparent 50%),
-        radial-gradient(ellipse 50% 50% at 50% 100%, var(--ambient-3) 0%, transparent 50%);
+      position: fixed; inset: 0; z-index: -1; pointer-events: none;
+      background: radial-gradient(circle at 20% 20%, rgba(139, 92, 246, 0.15) 0%, transparent 40%),
+                  radial-gradient(circle at 80% 80%, rgba(236, 72, 153, 0.1) 0%, transparent 40%);
       transition: background 0.5s ease;
     }
 
@@ -97,50 +101,52 @@
     .navbar {
       position: fixed; top: 0; left: 0; right: 0; z-index: 100;
       background: var(--navbar-bg);
-      backdrop-filter: blur(20px) saturate(1.5);
-      border-bottom: 1px solid var(--navbar-border);
-      transition: background 0.4s ease, border-color 0.4s ease; /* yumuşak geçiş */
+      backdrop-filter: blur(20px) saturate(1.8);
+      border-bottom: var(--navbar-border);
+      transition: all 0.4s ease;
     }
     .navbar-inner {
       max-width: 1200px; margin: 0 auto;
-      padding: 0 24px; height: 60px;
+      padding: 0 32px; height: 72px;
       display: flex; align-items: center; justify-content: space-between;
     }
     .navbar-brand {
-      display: flex; align-items: center; gap: 10px;
+      display: flex; align-items: center; gap: 12px;
       text-decoration: none; color: var(--text-primary);
     }
     .brand-icon {
-      width: 32px; height: 32px; border-radius: var(--radius-sm);
+      width: 36px; height: 36px; border-radius: 10px;
       background: var(--gradient-main);
       display: flex; align-items: center; justify-content: center;
-      font-size: 16px; font-weight: 800; color: white;
-      box-shadow: 0 4px 12px rgba(139,92,246,0.3);
+      font-size: 18px; font-weight: 800; color: white;
+      box-shadow: 0 8px 16px rgba(139,92,246,0.3);
     }
     .brand-text {
-      font-weight: 800; font-size: 18px; letter-spacing: -0.5px;
+      font-weight: 800; font-size: 20px; letter-spacing: -0.8px;
       background: var(--gradient-main);
       -webkit-background-clip: text; -webkit-text-fill-color: transparent;
       background-clip: text;
     }
-    .navbar-links { display: flex; align-items: center; gap: 20px; }
+    .navbar-links { display: flex; align-items: center; gap: 24px; }
     .navbar-link {
-      color: var(--text-secondary); text-decoration: none; font-size: 13px;
+      color: var(--text-secondary); text-decoration: none; font-size: 14px;
       font-weight: 500; transition: color var(--transition);
-      display: flex; align-items: center; gap: 5px;
-    }
-    .navbar-link:hover { color: var(--text-primary); }
-    .navbar-link svg { width: 16px; height: 16px; }
-    .github-btn {
-      padding: 6px 14px; border-radius: var(--radius-full);
-      border: 1px solid var(--border); background: var(--bg-card);
-      color: var(--text-primary); font-size: 12px; font-weight: 600;
-      text-decoration: none; transition: all var(--transition);
       display: flex; align-items: center; gap: 6px;
     }
+    .navbar-link:hover { color: var(--text-primary); }
+    .navbar-link svg { width: 18px; height: 18px; }
+    .github-btn {
+      padding: 8px 18px; border-radius: var(--radius-full);
+      border: var(--border-glass); background: var(--bg-glass);
+      color: var(--text-primary); font-size: 13px; font-weight: 600;
+      backdrop-filter: blur(5px);
+      text-decoration: none; transition: all var(--transition);
+      display: flex; align-items: center; gap: 8px;
+    }
     .github-btn:hover {
-      border-color: var(--accent-violet);
-      box-shadow: 0 0 20px rgba(139,92,246,0.15);
+      background: var(--bg-glass-hover);
+      transform: translateY(-2px);
+      box-shadow: var(--shadow-glass);
     }
 
     /* ── Ana Bölüm ── */
@@ -166,61 +172,90 @@
       50% { opacity: 0.8; box-shadow: 0 0 0 6px rgba(16,185,129,0); }
     }
     .hero-title {
-      font-size: clamp(36px, 6vw, 64px);
-      font-weight: 900; line-height: 1.05;
-      letter-spacing: -2px; margin-bottom: 16px;
-      color: var(--text-primary);
+      font-size: clamp(38px, 10vw, 88px);
+      font-weight: 900; line-height: 0.9;
+      letter-spacing: -5px; margin-bottom: 28px;
+      color: #ffffff;
+      transition: all var(--transition);
     }
     .hero-title span {
       background: var(--gradient-main);
       -webkit-background-clip: text; -webkit-text-fill-color: transparent;
       background-clip: text;
+      filter: drop-shadow(0 10px 20px rgba(0,0,0,0.1));
     }
     .hero-subtitle {
-      font-size: clamp(15px, 2vw, 18px);
+      font-size: clamp(16px, 2.5vw, 20px);
       color: var(--text-secondary); line-height: 1.6;
-      max-width: 520px; margin: 0 auto 40px;
+      max-width: 600px; margin: 0 auto 48px;
       font-weight: 400;
+      opacity: 0.9;
     }
 
     /* ── Arama Kutusu ── */
+    /* ── Arama Kutusu (Glass & Floating Label) ── */
     .search-container {
-      max-width: 560px; margin: 0 auto;
+      max-width: 620px; margin: 0 auto;
       position: relative;
     }
     .search-box {
       display: flex; align-items: center;
-      background: var(--bg-input); border: 1px solid var(--border);
-      border-radius: var(--radius-xl); padding: 6px 6px 6px 20px;
+      background: var(--bg-glass); border: var(--border-glass);
+      border-radius: var(--radius-xl); padding: 8px 8px 8px 24px;
+      backdrop-filter: var(--glass-blur);
       transition: all var(--transition);
-      box-shadow: 0 8px 32px rgba(0,0,0,0.2);
+      box-shadow: var(--shadow-premium);
     }
     .search-box:focus-within {
-      border-color: var(--accent-violet);
-      box-shadow: 0 8px 32px rgba(0,0,0,0.2), 0 0 0 3px rgba(139,92,246,0.15);
+      border-color: rgba(255,255,255,0.4);
+      box-shadow: 0 12px 48px rgba(0,0,0,0.3);
+      transform: translateY(-2px);
+    }
+    .input-group {
+      position: relative; flex: 1; display: flex; align-items: center;
     }
     .search-prefix {
-      color: var(--text-muted); font-size: 15px; font-weight: 500;
-      margin-right: 2px; user-select: none;
+      color: var(--text-muted); font-size: 18px; font-weight: 500;
+      margin-right: 2px; z-index: 2; transition: all var(--transition);
+      padding-top: 10px;
     }
     .search-input {
       flex: 1; border: none; outline: none; background: transparent;
-      color: var(--text-primary); font-size: 15px; font-family: inherit;
-      font-weight: 500; padding: 14px 8px;
+      color: var(--text-primary); font-size: 16px; font-family: inherit;
+      font-weight: 500; padding: 22px 10px 8px 4px;
+      width: 100%; z-index: 1;
     }
-    .search-input::placeholder { color: var(--text-muted); }
+    .floating-label {
+      position: absolute; left: 24px; top: 50%;
+      transform: translateY(-50%);
+      color: var(--text-muted); font-size: 15px; font-weight: 400;
+      pointer-events: none; transition: all var(--transition);
+      z-index: 0;
+    }
+    .search-input:focus ~ .floating-label,
+    .search-input:not(:placeholder-shown) ~ .floating-label,
+    .search-input:valid ~ .floating-label {
+      top: 10px; left: 4px; font-size: 10px; font-weight: 700;
+      color: var(--accent-violet-light);
+      text-transform: uppercase; letter-spacing: 1px;
+    }
+    .search-input::placeholder { color: transparent; }
+
     .search-btn {
       flex-shrink: 0; border: none; cursor: pointer;
-      background: var(--gradient-main);
+      background: rgba(255,255,255,0.1);
+      border: 1px solid rgba(255,255,255,0.2);
       color: white; font-size: 14px; font-weight: 700;
-      font-family: inherit;
-      padding: 12px 28px; border-radius: var(--radius-lg);
+      padding: 14px 32px; border-radius: var(--radius-lg);
       transition: all var(--transition);
       display: flex; align-items: center; gap: 8px;
     }
-    .search-btn:hover { opacity: 0.9; transform: translateY(-1px); }
+    .search-btn:hover {
+      background: rgba(255,255,255,0.2);
+      transform: scale(1.02);
+    }
     .search-btn:active { transform: scale(0.97); }
-    .search-btn svg { width: 18px; height: 18px; }
+    .search-btn svg { width: 20px; height: 20px; }
 
     /* ── Yükleniyor ── */
     .loader {
@@ -260,10 +295,16 @@
     }
 
     /* ── Profil Kartı ── */
+    .profile-card, .hd-card, .posts-card, .stories-card {
+      background: var(--bg-glass) !important;
+      border: var(--border-glass) !important;
+      backdrop-filter: var(--glass-blur) !important;
+      border-radius: var(--radius-2xl) !important;
+      box-shadow: var(--shadow-premium) !important;
+      overflow: hidden;
+    }
     .profile-card {
-      background: var(--bg-card); border: 1px solid var(--border);
-      border-radius: var(--radius-2xl); overflow: hidden;
-      box-shadow: var(--shadow-lg);
+      margin-bottom: 24px;
     }
     .profile-banner {
       height: 100px; position: relative;
@@ -314,21 +355,21 @@
       margin-top: 12px; white-space: pre-wrap;
     }
     .profile-stats {
-      display: flex; gap: 0; margin-top: 20px;
-      border-top: 1px solid var(--border); padding-top: 20px;
+      display: flex; gap: 0; margin-top: 32px;
+      border-top: var(--border-glass); padding: 32px 0;
     }
     .stat {
       flex: 1; text-align: center;
-      border-right: 1px solid var(--border);
+      border-right: var(--border-glass);
     }
     .stat:last-child { border-right: none; }
     .stat-value {
-      font-size: 20px; font-weight: 800; letter-spacing: -0.5px;
-      color: var(--text-primary);
+      font-size: 24px; font-weight: 800; letter-spacing: -1px;
+      color: #ffffff;
     }
     .stat-label {
-      font-size: 11px; color: var(--text-muted); font-weight: 500;
-      text-transform: uppercase; letter-spacing: 0.5px; margin-top: 2px;
+      font-size: 12px; color: var(--text-muted); font-weight: 600;
+      text-transform: uppercase; letter-spacing: 1px; margin-top: 4px;
     }
 
     /* ── HD Görsel Kartı ── */
@@ -381,28 +422,32 @@
       display: flex; gap: 12px; margin-top: 20px;
       max-width: 400px; margin-left: auto; margin-right: auto;
     }
-    .btn-primary {
-      flex: 1; display: flex; align-items: center; justify-content: center; gap: 8px;
-      padding: 14px 20px; border-radius: var(--radius-lg);
-      background: var(--gradient-main); color: white;
-      font-size: 14px; font-weight: 700; font-family: inherit;
-      border: none; cursor: pointer; text-decoration: none;
-      transition: all var(--transition);
+    .btn-primary, .btn-secondary {
+      flex: 1; display: flex; align-items: center; justify-content: center; gap: 10px;
+      padding: 16px 24px; border-radius: var(--radius-md);
+      font-size: 14px; font-weight: 700; transition: all var(--transition);
+      backdrop-filter: blur(10px);
+      border: var(--border-glass);
+      cursor: pointer; text-decoration: none;
     }
-    .btn-primary:hover { opacity: 0.9; transform: translateY(-1px); }
+    .btn-primary {
+      background: rgba(255, 255, 255, 0.15); color: #ffffff;
+    }
+    .btn-primary:hover {
+      background: rgba(255, 255, 255, 0.25); transform: translateY(-2px);
+      border-color: rgba(255, 255, 255, 0.4);
+      box-shadow: 0 10px 40px rgba(0,0,0,0.2);
+    }
     .btn-primary:active { transform: scale(0.97); }
     .btn-secondary {
-      flex: 1; display: flex; align-items: center; justify-content: center; gap: 8px;
-      padding: 14px 20px; border-radius: var(--radius-lg);
-      background: var(--bg-input); border: 1px solid var(--border);
-      color: var(--text-primary); font-size: 14px; font-weight: 600;
-      font-family: inherit; cursor: pointer; text-decoration: none;
-      transition: all var(--transition);
+      background: rgba(255, 255, 255, 0.05); color: var(--text-secondary);
     }
     .btn-secondary:hover {
-      border-color: var(--accent-violet);
-      background: var(--bg-card-hover);
+      background: rgba(255, 255, 255, 0.12); color: #ffffff;
+      transform: translateY(-2px);
+      border-color: rgba(255, 255, 255, 0.3);
     }
+    .btn-secondary:active { transform: scale(0.97); }
     .btn-secondary svg, .btn-primary svg { width: 18px; height: 18px; }
     .hd-resolution {
       text-align: center; margin-top: 12px;
@@ -451,13 +496,16 @@
     /* ── Tam Ekran Görüntüleyici ── */
     .modal-overlay {
       display: none; position: fixed; inset: 0; z-index: 200;
-      background: rgba(0,0,0,0.85); backdrop-filter: blur(8px);
+      background: rgba(0,0,0,0.4); backdrop-filter: blur(20px);
       align-items: center; justify-content: center; padding: 24px;
     }
-    .modal-overlay.active { display: flex; animation: fadeIn 0.2s ease; }
+    .modal-overlay.active { display: flex; animation: fadeIn 0.4s ease; }
     .modal-content {
       position: relative; max-width: 90vw; max-height: 90vh;
-      display: flex; flex-direction: column; align-items: center; gap: 16px;
+      display: flex; flex-direction: column; align-items: center; gap: 20px;
+      background: var(--bg-glass); border: var(--border-glass);
+      backdrop-filter: var(--glass-blur); border-radius: var(--radius-2xl);
+      padding: 10px; box-shadow: var(--shadow-premium);
     }
     .modal-close {
       position: absolute; top: -12px; right: -12px;
@@ -1391,9 +1439,13 @@
     }
 
     /* ── Yumuşak tema geçişleri ── */
-    body, .profile-card, .hd-card, .posts-card, .search-box, .btn-secondary, .footer,
-    .navbar, .ambient-bg, .hero-badge, .toast, .category-badge, .bio-link {
-      transition: background 0.4s ease, border-color 0.4s ease, color 0.4s ease, box-shadow 0.4s ease;
+    body, .profile-card, .hd-card, .posts-card, .stories-card, .search-box, .btn-secondary, .btn-primary, .footer,
+    .navbar, .ambient-bg, .hero-badge, .toast, .category-badge, .bio-link, .modal-content {
+      transition: background 0.6s cubic-bezier(0.16, 1, 0.3, 1), 
+                  border-color 0.6s cubic-bezier(0.16, 1, 0.3, 1), 
+                  color 0.6s cubic-bezier(0.16, 1, 0.3, 1), 
+                  box-shadow 0.6s cubic-bezier(0.16, 1, 0.3, 1),
+                  backdrop-filter 0.6s cubic-bezier(0.16, 1, 0.3, 1);
     }
 
     /* ── Tema Değiştirici (Mevcut) ── */
@@ -1697,15 +1749,18 @@
     <!-- Arama -->
     <div class="search-container">
       <div class="search-box">
-        <span class="search-prefix">@</span>
-        <input
-          id="searchInput"
-          type="text"
-          class="search-input"
-          placeholder="kullanici_adi"
-          autocomplete="off"
-          spellcheck="false"
-        />
+        <div class="input-group">
+          <span class="search-prefix">@</span>
+          <input
+            id="searchInput"
+            type="text"
+            class="search-input"
+            required
+            autocomplete="off"
+            spellcheck="false"
+          />
+          <label class="floating-label">kullanıcı_adı</label>
+        </div>
         <button id="searchBtn" class="search-btn" onclick="search()">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
           <span>Görüntüle</span>
