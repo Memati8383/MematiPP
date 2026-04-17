@@ -2378,11 +2378,16 @@
           result.scrollIntoView({ behavior: 'smooth', block: 'start' });
         }, 100);
 
-        // ── Stories Yükle ──
-        if (d.id) {
+        // ── Stories, Highlights ve Reels Yükle (Sadece hesap açık ise) ──
+        if (d.id && !d.is_private) {
           loadStories(d.id, d.username, d.profile_pic_url_hd);
           loadHighlights(d.username);
           loadReels(d.username);
+        } else if (d.id && d.is_private) {
+          // Gizli hesap ise diğer kartları gizle
+          document.getElementById('storiesCard').classList.remove('active');
+          document.getElementById('highlightsCard').classList.remove('active');
+          document.getElementById('reelsCard').classList.remove('active');
         }
 
       } catch (err) {
