@@ -445,9 +445,9 @@
       background: rgba(255, 255, 255, 0.05); color: var(--text-secondary);
     }
     .btn-secondary:hover {
-      background: rgba(255, 255, 255, 0.12); color: #ffffff;
+      background: var(--bg-glass-hover); color: var(--text-primary);
       transform: translateY(-2px);
-      border-color: rgba(255, 255, 255, 0.3);
+      border-color: var(--border-glass-focus);
     }
     .btn-secondary:active { transform: scale(0.97); }
     .btn-secondary svg, .btn-primary svg { width: 18px; height: 18px; }
@@ -898,12 +898,12 @@
       position: relative;
       padding: 3px;
       border-radius: 50%;
-      background: linear-gradient(45deg, #f09433, #e6683c, #dc2743, #cc2366, #bc1888);
-      box-shadow: 0 0 15px rgba(220, 39, 67, 0.2);
+      background: var(--gradient-main);
+      box-shadow: 0 0 15px rgba(56, 189, 248, 0.2);
       transition: box-shadow 0.3s ease;
     }
     .story-thumb:hover .story-thumb-ring-wrap {
-      box-shadow: 0 0 25px rgba(220, 39, 67, 0.6);
+      box-shadow: 0 0 25px rgba(56, 189, 248, 0.6);
     }
 
     .story-thumb-ring {
@@ -923,12 +923,12 @@
     .story-thumb-label {
       font-size: 10.5px;
       font-weight: 700;
-      color: rgba(255,255,255,0.6);
+      color: var(--text-muted);
       text-transform: uppercase;
       letter-spacing: 0.5px;
       transition: color 0.3s ease;
     }
-    .story-thumb:hover .story-thumb-label { color: #fff; }
+    .story-thumb:hover .story-thumb-label { color: var(--text-primary); }
 
     .stories-count-badge {
       font-size: 11px;
@@ -983,7 +983,7 @@
       width: 72px; height: 72px;
       border-radius: 50%;
       padding: 3px;
-      background: linear-gradient(135deg, #f09433, #e6683c, #dc2743, #cc2366, #bc1888);
+      background: var(--gradient-main);
       box-shadow: 0 4px 16px rgba(96,165,250,0.25);
       transition: all var(--transition);
     }
