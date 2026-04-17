@@ -2643,7 +2643,7 @@
         }
 
         if (reelsArray.length > 0) {
-          reelsArray.forEach(item => {
+          reelsArray.forEach((item, i) => {
             const media = item.node?.media || item.media || item;
             const shortcode = media.code || media.shortcode;
             if(!shortcode) return;
@@ -3104,19 +3104,41 @@
 
       if (isVideo) {
         let videoUrl = '';
-        const v = media.video_versions;
-        if (Array.isArray(v) && v.length > 0) {
-            videoUrl = v[0].url || v[0];
-        } else {
-            videoUrl = media.video_url || media.url || '';
-        }
         
-        if (!videoUrl && media.video_dash_manifest) {
-            const match = media.video_dash_manifest.match(/<BaseURL>(.*?)<\/BaseURL>/);
-            if(match) videoUrl = match[1];
-        }
+        // Agresif Video URL araması (İç içe geçen yapılarda bile bulabilmek için)
+        const findVideo = (obj) => {
+            if (!obj) return null;
+            if (typeof obj === 'string' && (obj.includes('.mp4') || obj.includes('video'))) return obj;
+            
+            // Standart yollar
+            if (obj.video_url) return obj.video_url;
+            if (obj.url && obj.url.includes('.mp4')) return obj.url;
+            
+            // Video sürümleri dizisi (En yüksek çözünürlük genellikle ilk elemandır)
+            if (Array.isArray(obj.video_versions) && obj.video_versions.length > 0) {
+                const v = obj.video_versions[0];
+                return v.url || v;
+            }
+            
+            // Dash manifestten (XML içinden) BASE URL çekme
+            if (obj.video_dash_manifest) {
+                const m = obj.video_dash_manifest.match(/<BaseURL>(.*?)<\/BaseURL>/);
+                if (m) return m[1];
+            }
 
-        if (!videoUrl) throw new Error('Video URL bulunamadı');
+            // Carousel elemanı ise ilk slaytın videosuna bak
+            if (Array.isArray(obj.carousel_media) && obj.carousel_media[0]) {
+                return findVideo(obj.carousel_media[0]);
+            }
+
+            return null;
+        };
+
+        videoUrl = findVideo(media);
+        if (!videoUrl && media.node) videoUrl = findVideo(media.node);
+        if (!videoUrl && media.media) videoUrl = findVideo(media.media);
+        
+        if (!videoUrl) throw new Error('Video adresi tespit edilemedi');
 
         const proxyUrl = `/api/proxy?src=${encodeURIComponent(videoUrl)}&type=video`;
         contentHTML = `

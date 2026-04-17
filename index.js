@@ -19,6 +19,8 @@ app.get('/api/proxy', (req, res) => {
     if (type === 'video') {
         const headers = {
             'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36',
+            'Referer': 'https://www.instagram.com/',
+            'Accept': '*/*'
         };
         if (req.headers.range) headers.range = req.headers.range;
 
