@@ -17,7 +17,19 @@ app.get('/api/proxy', (req, res) => {
     if (!src) return res.status(400).json({ error: 'Kaynak eksik' });
 
     if (type === 'video') {
-        res.redirect(src);
+        axios({
+            url: src,
+            method: 'GET',
+            responseType: 'stream',
+            headers: {
+                'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36'
+            }
+        }).then(response => {
+            res.setHeader('Content-Type', response.headers['content-type'] || 'video/mp4');
+            response.data.pipe(res);
+        }).catch(err => {
+            res.redirect(src);
+        });
     } else {
         res.redirect(`https://wsrv.nl/?url=${encodeURIComponent(src)}`);
     }
