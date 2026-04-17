@@ -766,6 +766,402 @@
       .video-indicator svg { width: 16px; height: 16px; }
     }
 
+    /* ═══════════════════════════════════════════════════════
+       Stories Sistemi – CSS
+    ═══════════════════════════════════════════════════════ */
+
+    /* ── Stories Kartı ── */
+    .stories-card {
+      display: none;
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-2xl);
+      overflow: hidden;
+      margin-top: 20px;
+      box-shadow: var(--shadow-lg);
+      animation: slideUp 0.5s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+    .stories-card.active { display: block; }
+    .stories-header {
+      padding: 16px 24px;
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+    }
+    .stories-header-left {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .stories-header-icon {
+      width: 28px; height: 28px;
+      border-radius: var(--radius-sm);
+      background: linear-gradient(135deg, rgba(245,158,11,0.15), rgba(236,72,153,0.15));
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .stories-header-icon svg {
+      width: 16px; height: 16px;
+      color: #f59e0b;
+    }
+    .stories-header-title {
+      font-size: 13px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      color: var(--text-secondary);
+    }
+    .stories-count-badge {
+      font-size: 11px;
+      font-weight: 700;
+      padding: 3px 10px;
+      border-radius: var(--radius-full);
+      background: linear-gradient(135deg, rgba(245,158,11,0.12), rgba(236,72,153,0.12));
+      border: 1px solid rgba(245,158,11,0.2);
+      color: #f59e0b;
+    }
+
+    /* Story Thumbnail Grid */
+    .stories-grid {
+      display: flex;
+      gap: 16px;
+      padding: 20px 24px;
+      overflow-x: auto;
+      scroll-snap-type: x mandatory;
+      scrollbar-width: none;
+      -ms-overflow-style: none;
+    }
+    .stories-grid::-webkit-scrollbar { display: none; }
+
+    .story-thumb {
+      flex-shrink: 0;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 8px;
+      cursor: pointer;
+      scroll-snap-align: start;
+      transition: transform var(--transition);
+    }
+    .story-thumb:hover { transform: translateY(-2px); }
+
+    .story-thumb-ring {
+      width: 72px; height: 72px;
+      border-radius: 50%;
+      padding: 3px;
+      background: linear-gradient(135deg, #f09433, #e6683c, #dc2743, #cc2366, #bc1888);
+      box-shadow: 0 4px 16px rgba(236,72,153,0.25);
+      transition: all var(--transition);
+    }
+    .story-thumb:hover .story-thumb-ring {
+      box-shadow: 0 6px 24px rgba(236,72,153,0.4);
+      transform: scale(1.05);
+    }
+    .story-thumb-img {
+      width: 100%; height: 100%;
+      border-radius: 50%;
+      object-fit: cover;
+      border: 2.5px solid var(--bg-card);
+      background: var(--bg-secondary);
+    }
+    .story-thumb-label {
+      font-size: 10px;
+      font-weight: 600;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      max-width: 72px;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+      text-align: center;
+    }
+    .story-thumb-video-badge {
+      position: absolute;
+      bottom: 2px; right: 2px;
+      width: 18px; height: 18px;
+      border-radius: 50%;
+      background: rgba(0,0,0,0.6);
+      backdrop-filter: blur(4px);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .story-thumb-video-badge svg {
+      width: 10px; height: 10px;
+      fill: white;
+    }
+    .story-thumb-ring-wrap {
+      position: relative;
+    }
+
+    /* Stories Loading */
+    .stories-loading {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 32px;
+      gap: 10px;
+      color: var(--text-muted);
+      font-size: 13px;
+      font-weight: 500;
+    }
+    .stories-loading .loader-spinner {
+      width: 20px; height: 20px;
+      border-width: 2px;
+    }
+
+    /* Stories Empty */
+    .stories-empty {
+      padding: 32px;
+      text-align: center;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 4px;
+    }
+    .stories-empty-icon {
+      width: 48px; height: 48px;
+      border-radius: 50%;
+      background: rgba(245,158,11,0.08);
+      border: 1px solid rgba(245,158,11,0.12);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 22px;
+      margin-bottom: 8px;
+    }
+    .stories-empty-title {
+      font-size: 14px;
+      font-weight: 700;
+      color: var(--text-primary);
+    }
+    .stories-empty-desc {
+      font-size: 12px;
+      color: var(--text-muted);
+      max-width: 260px;
+      line-height: 1.5;
+    }
+
+    /* ══════════════════════════════════════════
+       Stories Viewer Modal – Instagram Tarzı
+    ══════════════════════════════════════════ */
+    .story-viewer-overlay {
+      display: none;
+      position: fixed;
+      inset: 0;
+      z-index: 300;
+      background: rgba(0,0,0,0.95);
+      align-items: center;
+      justify-content: center;
+    }
+    .story-viewer-overlay.active {
+      display: flex;
+      animation: fadeIn 0.2s ease;
+    }
+
+    .story-viewer {
+      position: relative;
+      width: 100%;
+      max-width: 420px;
+      height: 90vh;
+      max-height: 750px;
+      border-radius: var(--radius-xl);
+      overflow: hidden;
+      background: #111;
+      box-shadow: 0 40px 120px rgba(0,0,0,0.6);
+    }
+
+    /* Progress Bars */
+    .story-progress-container {
+      position: absolute;
+      top: 0; left: 0; right: 0;
+      display: flex;
+      gap: 3px;
+      padding: 8px 10px 0;
+      z-index: 10;
+    }
+    .story-progress-bar {
+      flex: 1;
+      height: 2.5px;
+      border-radius: 2px;
+      background: rgba(255,255,255,0.25);
+      overflow: hidden;
+    }
+    .story-progress-fill {
+      height: 100%;
+      border-radius: 2px;
+      background: white;
+      width: 0%;
+      transition: none;
+    }
+    .story-progress-bar.viewed .story-progress-fill {
+      width: 100%;
+    }
+    .story-progress-bar.active .story-progress-fill {
+      width: 0%;
+      animation: storyProgress var(--story-duration, 5s) linear forwards;
+    }
+    .story-progress-bar.active.paused .story-progress-fill {
+      animation-play-state: paused;
+    }
+    @keyframes storyProgress {
+      from { width: 0%; }
+      to { width: 100%; }
+    }
+
+    /* Story Header (User Info) */
+    .story-viewer-header {
+      position: absolute;
+      top: 16px; left: 12px; right: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      z-index: 10;
+    }
+    .story-viewer-user {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .story-viewer-avatar {
+      width: 36px; height: 36px;
+      border-radius: 50%;
+      object-fit: cover;
+      border: 2px solid rgba(255,255,255,0.4);
+    }
+    .story-viewer-username {
+      font-size: 13px;
+      font-weight: 700;
+      color: white;
+      text-shadow: 0 1px 4px rgba(0,0,0,0.5);
+    }
+    .story-viewer-time {
+      font-size: 11px;
+      font-weight: 400;
+      color: rgba(255,255,255,0.7);
+      margin-left: 8px;
+    }
+    .story-viewer-close {
+      width: 32px; height: 32px;
+      border-radius: 50%;
+      background: rgba(255,255,255,0.12);
+      backdrop-filter: blur(8px);
+      border: none;
+      color: white;
+      font-size: 16px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: all var(--transition);
+    }
+    .story-viewer-close:hover {
+      background: rgba(255,255,255,0.25);
+    }
+
+    /* Story Media */
+    .story-viewer-media {
+      position: absolute;
+      inset: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: #000;
+    }
+    .story-viewer-media img,
+    .story-viewer-media video {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+
+    /* Navigation Zones */
+    .story-nav-zone {
+      position: absolute;
+      top: 60px; bottom: 80px;
+      width: 35%;
+      z-index: 5;
+      cursor: pointer;
+    }
+    .story-nav-prev { left: 0; }
+    .story-nav-next { right: 0; }
+
+    /* Story Footer */
+    .story-viewer-footer {
+      position: absolute;
+      bottom: 0; left: 0; right: 0;
+      padding: 16px 12px 14px;
+      background: linear-gradient(to top, rgba(0,0,0,0.7) 0%, transparent 100%);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 12px;
+      z-index: 10;
+    }
+    .story-action-btn {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      padding: 8px 18px;
+      border-radius: var(--radius-full);
+      background: rgba(255,255,255,0.12);
+      backdrop-filter: blur(8px);
+      border: 1px solid rgba(255,255,255,0.15);
+      color: white;
+      font-size: 12px;
+      font-weight: 600;
+      font-family: inherit;
+      cursor: pointer;
+      text-decoration: none;
+      transition: all var(--transition);
+    }
+    .story-action-btn:hover {
+      background: rgba(255,255,255,0.22);
+      transform: translateY(-1px);
+    }
+    .story-action-btn svg {
+      width: 14px; height: 14px;
+    }
+
+    /* Story Info (mentions, hashtags) */
+    .story-info-tags {
+      position: absolute;
+      bottom: 60px; left: 12px; right: 12px;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+      z-index: 10;
+    }
+    .story-tag {
+      font-size: 11px;
+      font-weight: 600;
+      padding: 3px 10px;
+      border-radius: var(--radius-full);
+      background: rgba(255,255,255,0.12);
+      backdrop-filter: blur(6px);
+      color: white;
+      text-shadow: 0 1px 2px rgba(0,0,0,0.3);
+    }
+
+    /* Responsive for story viewer */
+    @media (max-width: 640px) {
+      .story-viewer {
+        max-width: 100%;
+        height: 100vh;
+        max-height: 100vh;
+        border-radius: 0;
+      }
+      .stories-grid { padding: 16px; gap: 12px; }
+      .story-thumb-ring { width: 60px; height: 60px; }
+      .story-thumb-label { max-width: 60px; font-size: 9px; }
+      .stories-header { padding: 12px 16px; }
+    }
+
     /* ── Yumuşak tema geçişleri ── */
     body, .profile-card, .hd-card, .posts-card, .search-box, .btn-secondary, .footer,
     .navbar, .ambient-bg, .hero-badge, .toast, .category-badge, .bio-link {
@@ -1178,6 +1574,25 @@
       </div>
     </div>
 
+    <!-- ═══════ STORIES KARTI ═══════ -->
+    <div id="storiesCard" class="stories-card">
+      <div class="stories-header">
+        <div class="stories-header-left">
+          <div class="stories-header-icon">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+              <circle cx="12" cy="12" r="10"/>
+              <polygon points="10 8 16 12 10 16 10 8" fill="currentColor" stroke="none"/>
+            </svg>
+          </div>
+          <span class="stories-header-title">Aktif Hikayeler</span>
+        </div>
+        <span id="storiesCountBadge" class="stories-count-badge"></span>
+      </div>
+      <div id="storiesContent">
+        <!-- Loading / Grid / Empty durumları buraya JS ile eklenir -->
+      </div>
+    </div>
+
     <!-- Son Gönderiler -->
     <div id="postsCard" class="posts-card">
       <div class="posts-header">
@@ -1189,6 +1604,48 @@
       <div id="postsGrid" class="posts-grid"></div>
     </div>
   </section>
+
+  <!-- ═══════ STORY VIEWER MODAL ═══════ -->
+  <div id="storyViewer" class="story-viewer-overlay" onclick="if(event.target===this)closeStoryViewer()">
+    <div class="story-viewer">
+      <!-- Progress Bars -->
+      <div id="storyProgressContainer" class="story-progress-container"></div>
+
+      <!-- Header -->
+      <div class="story-viewer-header">
+        <div class="story-viewer-user">
+          <img id="storyViewerAvatar" class="story-viewer-avatar" src="" alt=""/>
+          <div>
+            <span id="storyViewerUsername" class="story-viewer-username"></span>
+            <span id="storyViewerTime" class="story-viewer-time"></span>
+          </div>
+        </div>
+        <button class="story-viewer-close" onclick="closeStoryViewer()" title="Kapat">✕</button>
+      </div>
+
+      <!-- Navigation Zones -->
+      <div class="story-nav-zone story-nav-prev" onclick="prevStory()"></div>
+      <div class="story-nav-zone story-nav-next" onclick="nextStory()"></div>
+
+      <!-- Media -->
+      <div id="storyViewerMedia" class="story-viewer-media"></div>
+
+      <!-- Tags -->
+      <div id="storyInfoTags" class="story-info-tags"></div>
+
+      <!-- Footer -->
+      <div class="story-viewer-footer">
+        <a id="storyDownloadBtn" href="#" download class="story-action-btn">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4M7 10l5 5 5-5M12 15V3"/></svg>
+          İndir
+        </a>
+        <a id="storyOpenBtn" href="#" target="_blank" rel="noopener" class="story-action-btn">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M18 13v6a2 2 0 01-2 2H5a2 2 0 01-2-2V8a2 2 0 012-2h6M15 3h6v6M10 14L21 3"/></svg>
+          Orijinal
+        </a>
+      </div>
+    </div>
+  </div>
 
   <!-- ═══════ TAM EKRAN GÖRÜNTÜLEYİCİ ═══════ -->
   <div id="modal" class="modal-overlay" onclick="if(event.target===this)closeModal()">
@@ -1264,6 +1721,8 @@
 
       toast.classList.remove('active');
       result.classList.remove('active');
+      document.getElementById('storiesCard').classList.remove('active');
+      storiesData = [];
       loader.classList.add('active');
 
       try {
@@ -1432,6 +1891,11 @@
           result.scrollIntoView({ behavior: 'smooth', block: 'start' });
         }, 100);
 
+        // ── Stories Yükle ──
+        if (d.id) {
+          loadStories(d.id, d.username, d.profile_pic_url_hd);
+        }
+
       } catch (err) {
         loader.classList.remove('active');
         showToast('Bir hata oluştu. Lütfen tekrar deneyin.');
@@ -1448,7 +1912,278 @@
       document.getElementById('modal').classList.remove('active');
       document.body.style.overflow = '';
     }
-    document.addEventListener('keydown', e => { if (e.key === 'Escape') closeModal(); });
+    document.addEventListener('keydown', e => {
+      if (e.key === 'Escape') {
+        if (document.getElementById('storyViewer').classList.contains('active')) {
+          closeStoryViewer();
+        } else {
+          closeModal();
+        }
+      }
+    });
+
+    // ═══════════════════════════════════════════════════════
+    //  Stories Sistemi – JavaScript
+    // ═══════════════════════════════════════════════════════
+    let storiesData = [];
+    let currentStoryIndex = 0;
+    let storyTimer = null;
+    let storyPaused = false;
+    let cachedUsername = '';
+    let cachedAvatar = '';
+
+    // ── Stories Yükle ──
+    async function loadStories(userId, username, avatarUrl) {
+      cachedUsername = username;
+      cachedAvatar = avatarUrl;
+      const storiesCard = document.getElementById('storiesCard');
+      const storiesContent = document.getElementById('storiesContent');
+      const countBadge = document.getElementById('storiesCountBadge');
+
+      // Loading göster
+      storiesCard.classList.add('active');
+      storiesContent.innerHTML = `
+        <div class="stories-loading">
+          <div class="loader-spinner"></div>
+          Hikayeler yükleniyor…
+        </div>
+      `;
+      countBadge.textContent = '';
+
+      try {
+        const res = await fetch(`/api/stories?userId=${userId}`);
+        const json = await res.json();
+
+        if (!json.success || !json.data || json.data.length === 0) {
+          storiesContent.innerHTML = `
+            <div class="stories-empty">
+              <div class="stories-empty-icon">📷</div>
+              <div class="stories-empty-title">Aktif Hikaye Yok</div>
+              <div class="stories-empty-desc">Bu kullanıcının şu an paylaştığı aktif bir hikaye bulunmuyor.</div>
+            </div>
+          `;
+          countBadge.textContent = '0';
+          return;
+        }
+
+        storiesData = json.data;
+        countBadge.textContent = storiesData.length + ' hikaye';
+
+        // Thumbnail grid oluştur
+        let gridHTML = '<div class="stories-grid">';
+        storiesData.forEach((story, i) => {
+          const thumbSrc = story.thumbnail_url || story.url;
+          const timeAgo = getTimeAgo(story.taken_at);
+          gridHTML += `
+            <div class="story-thumb" onclick="openStoryViewer(${i})" title="${timeAgo}">
+              <div class="story-thumb-ring-wrap">
+                <div class="story-thumb-ring">
+                  <img class="story-thumb-img" src="${thumbSrc}" alt="Story ${i + 1}" loading="lazy"/>
+                </div>
+                ${story.media_type === 'video' ? `
+                  <div class="story-thumb-video-badge">
+                    <svg viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>
+                  </div>
+                ` : ''}
+              </div>
+              <span class="story-thumb-label">${timeAgo}</span>
+            </div>
+          `;
+        });
+        gridHTML += '</div>';
+        storiesContent.innerHTML = gridHTML;
+
+      } catch (err) {
+        console.error('Stories yüklenirken hata:', err);
+        storiesContent.innerHTML = `
+          <div class="stories-empty">
+            <div class="stories-empty-icon">⚠️</div>
+            <div class="stories-empty-title">Hikayeler Yüklenemedi</div>
+            <div class="stories-empty-desc">Hikayeler şu an erişilebilir değil. Hesap gizli veya Instagram erişimi engellemiş olabilir.</div>
+          </div>
+        `;
+        countBadge.textContent = '–';
+      }
+    }
+
+    // ── Zaman Hesapla ──
+    function getTimeAgo(timestamp) {
+      if (!timestamp) return '';
+      const now = Math.floor(Date.now() / 1000);
+      const diff = now - timestamp;
+      if (diff < 60) return 'Az önce';
+      if (diff < 3600) return Math.floor(diff / 60) + ' dk';
+      if (diff < 86400) return Math.floor(diff / 3600) + ' sa';
+      return Math.floor(diff / 86400) + ' gün';
+    }
+
+    // ── Story Viewer Aç ──
+    function openStoryViewer(index) {
+      if (!storiesData.length) return;
+      currentStoryIndex = index;
+      storyPaused = false;
+
+      const overlay = document.getElementById('storyViewer');
+      overlay.classList.add('active');
+      document.body.style.overflow = 'hidden';
+
+      // Avatar & username
+      document.getElementById('storyViewerAvatar').src = cachedAvatar;
+      document.getElementById('storyViewerUsername').textContent = '@' + cachedUsername;
+
+      // Progress bars oluştur
+      buildProgressBars();
+      showStory(currentStoryIndex);
+    }
+
+    // ── Story Viewer Kapat ──
+    function closeStoryViewer() {
+      const overlay = document.getElementById('storyViewer');
+      overlay.classList.remove('active');
+      document.body.style.overflow = '';
+      clearTimeout(storyTimer);
+
+      // Videoyu durdur
+      const video = document.querySelector('#storyViewerMedia video');
+      if (video) { video.pause(); video.src = ''; }
+    }
+
+    // ── Progress Bars Oluştur ──
+    function buildProgressBars() {
+      const container = document.getElementById('storyProgressContainer');
+      container.innerHTML = '';
+      storiesData.forEach((_, i) => {
+        const bar = document.createElement('div');
+        bar.className = 'story-progress-bar';
+        bar.innerHTML = '<div class="story-progress-fill"></div>';
+        container.appendChild(bar);
+      });
+    }
+
+    // ── Story Göster ──
+    function showStory(index) {
+      if (index < 0 || index >= storiesData.length) {
+        closeStoryViewer();
+        return;
+      }
+
+      clearTimeout(storyTimer);
+      currentStoryIndex = index;
+      const story = storiesData[index];
+
+      // Progress bar güncelle
+      const bars = document.querySelectorAll('.story-progress-bar');
+      bars.forEach((bar, i) => {
+        bar.classList.remove('active', 'viewed', 'paused');
+        if (i < index) bar.classList.add('viewed');
+        if (i === index) bar.classList.add('active');
+      });
+
+      // Zaman bilgisi
+      document.getElementById('storyViewerTime').textContent = getTimeAgo(story.taken_at);
+
+      // İndirme/açma butonları
+      const originalUrl = story.original_url || '';
+      document.getElementById('storyDownloadBtn').href = story.url;
+      document.getElementById('storyDownloadBtn').download = `${cachedUsername}_story_${index + 1}.${story.media_type === 'video' ? 'mp4' : 'jpg'}`;
+      document.getElementById('storyOpenBtn').href = story.url;
+
+      // Tags (mentions + hashtags)
+      const tagsEl = document.getElementById('storyInfoTags');
+      tagsEl.innerHTML = '';
+      if (story.mentions && story.mentions.length > 0) {
+        story.mentions.forEach(m => {
+          tagsEl.innerHTML += `<span class="story-tag">@${m}</span>`;
+        });
+      }
+      if (story.hashtags && story.hashtags.length > 0) {
+        story.hashtags.forEach(h => {
+          tagsEl.innerHTML += `<span class="story-tag">#${h}</span>`;
+        });
+      }
+
+      // Media göster
+      const mediaContainer = document.getElementById('storyViewerMedia');
+
+      if (story.media_type === 'video') {
+        const duration = (story.duration || 15) * 1000;
+        // Progress bar süresini ayarla
+        const activeBar = document.querySelector('.story-progress-bar.active');
+        if (activeBar) activeBar.style.setProperty('--story-duration', (duration / 1000) + 's');
+
+        mediaContainer.innerHTML = `
+          <video
+            src="${story.url}"
+            autoplay
+            playsinline
+            muted
+            style="width:100%;height:100%;object-fit:cover;"
+          ></video>
+        `;
+
+        const videoEl = mediaContainer.querySelector('video');
+        videoEl.addEventListener('loadeddata', () => {
+          videoEl.muted = false;
+        });
+        videoEl.addEventListener('ended', () => {
+          nextStory();
+        });
+
+        // Yedek timer (video bitişini yakalamazsa)
+        storyTimer = setTimeout(() => nextStory(), duration + 500);
+
+      } else {
+        const duration = 5000; // 5 saniye
+        const activeBar = document.querySelector('.story-progress-bar.active');
+        if (activeBar) activeBar.style.setProperty('--story-duration', '5s');
+
+        mediaContainer.innerHTML = `
+          <img src="${story.url}" alt="Story" style="width:100%;height:100%;object-fit:cover;"/>
+        `;
+
+        storyTimer = setTimeout(() => nextStory(), duration);
+      }
+    }
+
+    // ── İleri / Geri ──
+    function nextStory() {
+      clearTimeout(storyTimer);
+      if (currentStoryIndex + 1 >= storiesData.length) {
+        closeStoryViewer();
+      } else {
+        showStory(currentStoryIndex + 1);
+      }
+    }
+    function prevStory() {
+      clearTimeout(storyTimer);
+      showStory(Math.max(0, currentStoryIndex - 1));
+    }
+
+    // ── Klavye Navigasyonu ──
+    document.addEventListener('keydown', e => {
+      if (!document.getElementById('storyViewer').classList.contains('active')) return;
+      if (e.key === 'ArrowRight' || e.key === ' ') { e.preventDefault(); nextStory(); }
+      if (e.key === 'ArrowLeft') { e.preventDefault(); prevStory(); }
+    });
+
+    // ── Dokunmatik pause/resume ──
+    document.querySelector('.story-viewer')?.addEventListener('mousedown', e => {
+      if (e.target.closest('.story-viewer-close') || e.target.closest('.story-action-btn'))
+        return;
+      storyPaused = true;
+      const activeBar = document.querySelector('.story-progress-bar.active');
+      if (activeBar) activeBar.classList.add('paused');
+      const video = document.querySelector('#storyViewerMedia video');
+      if (video) video.pause();
+    });
+    document.querySelector('.story-viewer')?.addEventListener('mouseup', () => {
+      if (!storyPaused) return;
+      storyPaused = false;
+      const activeBar = document.querySelector('.story-progress-bar.active');
+      if (activeBar) activeBar.classList.remove('paused');
+      const video = document.querySelector('#storyViewerMedia video');
+      if (video) video.play();
+    });
 
     // ── Tema Değiştirici ──
     const themeToggle = document.getElementById('themeToggle');
