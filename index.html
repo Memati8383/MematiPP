@@ -3049,7 +3049,7 @@
       const json = await res.json();
 
       if (!json.success || !json.data) {
-        throw new Error('Veri alınamadı');
+        throw new Error(json.error || 'Veri alınamadı');
       }
 
       // Daha esnek medya ayrıştırma
@@ -3062,6 +3062,7 @@
       else if (data.result && data.result.id) media = data.result;
       else if (data.data && data.data.shortcode_media) media = data.data.shortcode_media;
       else if (data.shortcode_media) media = data.shortcode_media;
+      else if (data.graphql && data.graphql.shortcode_media) media = data.graphql.shortcode_media;
       else media = data;
 
       if (!media || (!media.id && !media.shortcode && !media.display_url)) {
@@ -3073,17 +3074,20 @@
 
       if (isVideo) {
         let videoUrl = '';
-        if (media.video_versions && media.video_versions[0]) {
-            videoUrl = media.video_versions[0].url || media.video_versions[0];
+        if (media.video_versions && media.video_versions.length > 0) {
+            // En yüksek kaliteyi seçmeye çalışalım
+            const v = media.video_versions;
+            videoUrl = (v[0]?.url || v[0]) || '';
         } else {
             videoUrl = media.video_url || media.url || '';
         }
         
         if (!videoUrl && media.video_dash_manifest) {
-            // Dash manifestten url ayıkla (Basit yöntem)
             const match = media.video_dash_manifest.match(/<BaseURL>(.*?)<\/BaseURL>/);
             if(match) videoUrl = match[1];
         }
+
+        if (!videoUrl) throw new Error('Video URL bulunamadı');
 
         const proxyUrl = `/api/proxy?src=${encodeURIComponent(videoUrl)}&type=video`;
         contentHTML = `
@@ -3091,7 +3095,7 @@
             <video src="${proxyUrl}" controls autoplay playsinline style="max-width:100%; max-height:100%;"></video>
           </div>
         `;
-      } else if (media.carousel_media || media.edge_sidecar_to_children) {
+      } else if (media.carousel_media || (media.edge_sidecar_to_children && media.edge_sidecar_to_children.edges)) {
         const items = media.carousel_media || media.edge_sidecar_to_children.edges.map(e => e.node);
         contentHTML = `<div style="display:flex; overflow-x:auto; scroll-snap-type:x mandatory; height:100%; background:#000;">`;
         items.forEach(item => {
@@ -3110,9 +3114,10 @@
         contentHTML += `</div>`;
       } else {
         const imgArr = media.image_versions2?.candidates || media.display_resources || [{url: media.display_url || media.image_url || media.url}];
-        const rawUrl = imgArr[0].url || imgArr[0].src || '';
-        const proxyUrl = `/api/proxy?src=${encodeURIComponent(rawUrl)}&type=image`;
+        const rawUrl = (imgArr && imgArr[0] ? (imgArr[0].url || imgArr[0].src) : (media.display_url || ''));
+        if (!rawUrl) throw new Error('Resim URL bulunamadı');
         
+        const proxyUrl = `/api/proxy?src=${encodeURIComponent(rawUrl)}&type=image`;
         contentHTML = `
           <div style="width:100%; height:100%; background:#000; display:flex; align-items:center; justify-content:center;">
             <img src="${proxyUrl}" style="max-width:100%; max-height:100%; object-fit:contain;"/>
@@ -3124,9 +3129,14 @@
 
     } catch (err) {
       console.error('Post modal error:', err);
-      // Hata durumunda eski iframe yöntemine dön (Fallback)
-      const path = type === 'reel' ? 'reels' : 'p';
-      container.innerHTML = `<iframe src="https://www.instagram.com/${path}/${shortcode}/embed" width="100%" height="100%" frameborder="0" scrolling="no" allowtransparency="true"></iframe>`;
+      // Hata durumunda daha güvenli bir iframe fallback veya direkt link
+      const path = type === 'reel' ? 'reel' : 'p';
+      container.innerHTML = `
+        <div style="display:flex; flex-direction:column; align-items:center; justify-content:center; height:100%; background:#fff; padding:20px; text-align:center; gap:20px;">
+          <iframe src="https://www.instagram.com/${path}/${shortcode}/embed" width="100%" height="450" frameborder="0" scrolling="no" allowtransparency="true" style="max-width:400px; border-radius:12px; box-shadow:0 10px 30px rgba(0,0,0,0.1);"></iframe>
+          <a href="https://www.instagram.com/${path}/${shortcode}" target="_blank" style="padding:12px 24px; background:#0095f6; color:#fff; border-radius:8px; text-decoration:none; font-weight:600; font-size:14px;">Instagram'da Görüntüle</a>
+        </div>
+      `;
     }
   }
   function closePostModal() {

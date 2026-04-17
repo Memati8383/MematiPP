@@ -17,15 +17,22 @@ app.get('/api/proxy', (req, res) => {
     if (!src) return res.status(400).json({ error: 'Kaynak eksik' });
 
     if (type === 'video') {
+        const headers = {
+            'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36',
+        };
+        if (req.headers.range) headers.range = req.headers.range;
+
         axios({
             url: src,
             method: 'GET',
             responseType: 'stream',
-            headers: {
-                'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36'
-            }
+            headers: headers,
+            timeout: 15000
         }).then(response => {
-            res.setHeader('Content-Type', response.headers['content-type'] || 'video/mp4');
+            res.status(response.status);
+            ['content-type', 'content-length', 'content-range', 'accept-ranges'].forEach(h => {
+                if (response.headers[h]) res.setHeader(h, response.headers[h]);
+            });
             response.data.pipe(res);
         }).catch(err => {
             res.redirect(src);
@@ -359,8 +366,8 @@ app.post('/api/instagram/userInfo', async (req, res) => {
 
 app.post('/api/instagram/mediaByShortcode', async (req, res) => {
     try {
-        // mediaByshortcode or mediaByShortcode (both versions are commonly supported depending on RapidAPI config, keeping standard here but forwarding properly)
-        const response = await axios.post(`${RAPIDAPI_BASE}/mediaByshortcode`, { shortcode: req.body.shortcode }, { headers: RAPIDAPI_HEADERS });
+        // mediaByShortcode standard but some RapidAPI configs use mediaByShortcode
+        const response = await axios.post(`${RAPIDAPI_BASE}/mediaByShortcode`, { shortcode: req.body.shortcode }, { headers: RAPIDAPI_HEADERS });
         res.json({ success: true, data: response.data });
     } catch (e) {
         res.status(e.response?.status || 500).json({ success: false, error: e.message, details: e.response?.data });
