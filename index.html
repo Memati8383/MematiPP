@@ -526,7 +526,20 @@
     .modal-actions { display: flex; gap: 12px; }
 
     /* ── Duyarlı Tasarım ── */
-    @media (max-width: 768px) {
+    /* Story Volume Ctrl */
+  .story-volume-wrapper {
+    display: flex; align-items: center; gap: 8px;
+    background: rgba(0,0,0,0.3); padding: 5px 10px; border-radius: 20px;
+    backdrop-filter: blur(5px);
+  }
+  .story-volume-slider {
+    width: 60px; height: 3px; -webkit-appearance: none; background: rgba(255,255,255,0.3); border-radius: 2px;
+  }
+  .story-volume-slider::-webkit-slider-thumb {
+    -webkit-appearance: none; width: 10px; height: 10px; background: #fff; border-radius: 50%;
+  }
+
+  @media (max-width: 768px) {
       .hero-title { letter-spacing: -1px; }
       .profile-stats { gap: 0; }
       .modal-actions { flex-direction: column; width: 100%; }
@@ -1942,10 +1955,13 @@
           </div>
         </div>
         <div class="story-viewer-header-actions">
-          <button id="storyMuteBtn" class="story-viewer-mute" onclick="toggleStoryMute()" title="Sesi Aç/Kapat">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="mute-icon-on"><path d="M11 5L6 9H2v6h4l5 4V5zM19.07 4.93a10 10 0 010 14.14M15.54 8.46a5 5 0 010 7.07"/></svg>
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="mute-icon-off" style="display:none;"><path d="M11 5L6 9H2v6h4l5 4V5zM23 9l-6 6M17 9l6 6"/></svg>
-          </button>
+          <div class="story-volume-wrapper">
+            <button id="storyMuteBtn" class="story-viewer-mute" onclick="toggleStoryMute()" title="Sesi Aç/Kapat">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="mute-icon-on"><path d="M11 5L6 9H2v6h4l5 4V5zM19.07 4.93a10 10 0 010 14.14M15.54 8.46a5 5 0 010 7.07"/></svg>
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="mute-icon-off" style="display:none;"><path d="M11 5L6 9H2v6h4l5 4V5zM23 9l-6 6M17 9l6 6"/></svg>
+            </button>
+            <input type="range" class="story-volume-slider" id="storyVolumeSlider" min="0" max="1" step="0.05" value="1" oninput="setGlobalVolume(this.value)">
+          </div>
           <button class="story-viewer-close" onclick="closeStoryViewer()" title="Kapat">✕</button>
         </div>
       </div>
@@ -2294,19 +2310,53 @@
     let cachedAvatar = '';
 
     function toggleStoryMute() {
-      isStoryMuted = !isStoryMuted;
+      globalMuted = !globalMuted;
       const video = document.querySelector('#storyViewerMedia video');
-      if (video) video.muted = isStoryMuted;
+      if (video) video.muted = globalMuted;
+      updateAllMuteIcons();
+    }
+    
+    function setGlobalVolume(val) {
+      globalVolume = parseFloat(val);
+      if (globalVolume > 0) globalMuted = false;
       
-      const onIcon = document.querySelector('.mute-icon-on');
-      const offIcon = document.querySelector('.mute-icon-off');
-      if (isStoryMuted) {
-        onIcon.style.display = 'none';
-        offIcon.style.display = 'block';
-      } else {
-        onIcon.style.display = 'block';
-        offIcon.style.display = 'none';
+      // Update story video
+      const storyVideo = document.querySelector('#storyViewerMedia video');
+      if (storyVideo) {
+         storyVideo.volume = globalVolume;
+         storyVideo.muted = globalMuted;
       }
+      
+      // Update modal video
+      const modalVideo = document.getElementById('modalVideo');
+      if (modalVideo) {
+         modalVideo.volume = globalVolume;
+         modalVideo.muted = globalMuted;
+      }
+      
+      updateAllMuteIcons();
+    }
+
+    function updateAllMuteIcons() {
+      // Stories
+      const storyOn = document.querySelector('.mute-icon-on');
+      const storyOff = document.querySelector('.mute-icon-off');
+      const storySlider = document.getElementById('storyVolumeSlider');
+      if(storyOn && storyOff) {
+        storyOn.style.display = globalMuted ? 'none' : 'block';
+        storyOff.style.display = globalMuted ? 'block' : 'none';
+      }
+      if(storySlider) storySlider.value = globalMuted ? 0 : globalVolume;
+
+      // Modal
+      const modalOn = document.querySelector('.post-mute-on');
+      const modalOff = document.querySelector('.post-mute-off');
+      const modalSlider = document.getElementById('postVolumeSlider');
+      if(modalOn && modalOff) {
+        modalOn.style.display = globalMuted ? 'none' : 'block';
+        modalOff.style.display = globalMuted ? 'block' : 'none';
+      }
+      if(modalSlider) modalSlider.value = globalMuted ? 0 : globalVolume;
     }
 
     // ── Stories Yükle ──
@@ -2905,8 +2955,10 @@
         const startVideo = () => {
           mediaContainer.classList.remove('loading');
           mediaContainer.classList.add('loaded');
+          videoEl.volume = globalVolume;
+          videoEl.muted = globalMuted;
           videoEl.play().catch(e => console.log("Autoplay blocked:", e));
-          videoEl.muted = isStoryMuted;
+          updateAllMuteIcons();
           if (activeBar) activeBar.classList.remove('paused');
           // Timer'ı video hazır olduğunda başlat
           storyTimer = setTimeout(nextStory, duration + 1000);
@@ -3040,12 +3092,12 @@
   .post-modal-volume-ctrl {
     position: absolute; bottom: 85px; right: 20px;
     display: flex; align-items: center; gap: 10px;
-    background: rgba(15, 23, 42, 0.8); padding: 10px 15px;
-    border-radius: 20px; backdrop-filter: blur(10px);
-    border: 1px solid rgba(255,255,255,0.1);
-    z-index: 101; opacity: 0; transition: opacity 0.3s;
+    background: rgba(15, 23, 42, 0.85); padding: 10px 15px;
+    border-radius: 20px; backdrop-filter: blur(15px);
+    border: 1px solid rgba(56, 189, 248, 0.2);
+    z-index: 101; transition: all 0.3s;
+    box-shadow: 0 5px 15px rgba(0,0,0,0.3);
   }
-  .post-modal-content:hover .post-modal-volume-ctrl { opacity: 1; }
   .volume-slider { width: 80px; height: 4px; -webkit-appearance: none; background: rgba(255,255,255,0.2); border-radius: 2px; cursor: pointer; }
   .volume-slider::-webkit-slider-thumb { -webkit-appearance: none; width: 12px; height: 12px; background: #fff; border-radius: 50%; box-shadow: 0 0 10px rgba(0,0,0,0.5); }
   .mute-btn { background: none; border: none; color: white; cursor: pointer; display: flex; align-items: center; padding: 0; }
@@ -3173,14 +3225,13 @@
           </div>
         `;
         document.getElementById('postVolumeCtrl').style.display = 'flex';
+        document.getElementById('postVolumeCtrl').style.opacity = '1';
         setTimeout(() => {
             const v = document.getElementById('modalVideo');
             if(v) {
                 v.volume = globalVolume;
                 v.muted = globalMuted;
-                v.play().catch(() => {
-                    // Autoplay blocked, maybe suggest a play button
-                });
+                v.play().catch(e => console.log("Video playback started manually or auto-failed:", e));
                 updateMuteIcons();
             }
         }, 100);
@@ -3278,38 +3329,15 @@
   }
 
   function togglePostMute() {
-    globalMuted = !globalMuted;
-    const v = document.getElementById('modalVideo');
-    if(v) v.muted = globalMuted;
-    updateMuteIcons();
+    toggleStoryMute();
   }
 
   function setPostVolume(val) {
-    globalVolume = parseFloat(val);
-    const v = document.getElementById('modalVideo');
-    if(v) {
-        v.volume = globalVolume;
-        if(globalVolume > 0) {
-            globalMuted = false;
-            v.muted = false;
-        }
-    }
-    updateMuteIcons();
+    setGlobalVolume(val);
   }
 
   function updateMuteIcons() {
-    const onIcon = document.querySelector('.post-mute-on');
-    const offIcon = document.querySelector('.post-mute-off');
-    const slider = document.getElementById('postVolumeSlider');
-    
-    if (globalMuted || globalVolume === 0) {
-        onIcon.style.display = 'none';
-        offIcon.style.display = 'block';
-    } else {
-        onIcon.style.display = 'block';
-        offIcon.style.display = 'none';
-    }
-    if(slider) slider.value = globalMuted ? 0 : globalVolume;
+    updateAllMuteIcons();
   }
   </script>
 </body>
