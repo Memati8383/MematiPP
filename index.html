@@ -2305,12 +2305,12 @@
         // HD görsel
         const profileDlName = d.username + '_profil';
         document.getElementById('resHdImg').src = d.profile_pic_url_hd;
-        document.getElementById('resDownload').href = `/api/download?src=${encodeURIComponent(d.profile_pic_url_hd)}&filename=${profileDlName}`;
+        document.getElementById('resDownload').href = `/api/download?src=${encodeURIComponent(d.profile_pic_original)}&filename=${profileDlName}`;
         document.getElementById('resOpenTab').href = d.profile_pic_url_hd;
 
         // Tam ekran görüntüleyici
         document.getElementById('modalImg').src = d.profile_pic_url_hd;
-        document.getElementById('modalDownload').href = `/api/download?src=${encodeURIComponent(d.profile_pic_url_hd)}&filename=${profileDlName}`;
+        document.getElementById('modalDownload').href = `/api/download?src=${encodeURIComponent(d.profile_pic_original)}&filename=${profileDlName}`;
         document.getElementById('modalOpen').href = d.profile_pic_url_hd;
 
         // Son gönderiler grid
