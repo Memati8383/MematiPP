@@ -581,10 +581,10 @@
     backdrop-filter: blur(5px);
   }
   .story-volume-slider {
-    width: 60px; height: 3px; -webkit-appearance: none; background: rgba(255,255,255,0.3); border-radius: 2px;
+    width: 60px; height: 3px; -webkit-appearance: none; appearance: none; background: rgba(255,255,255,0.3); border-radius: 2px;
   }
   .story-volume-slider::-webkit-slider-thumb {
-    -webkit-appearance: none; width: 10px; height: 10px; background: #fff; border-radius: 50%;
+    -webkit-appearance: none; appearance: none; width: 10px; height: 10px; background: #fff; border-radius: 50%;
   }
 
   @media (max-width: 768px) {
@@ -3227,8 +3227,8 @@
     z-index: 100001; transition: all 0.3s;
     box-shadow: 0 10px 30px rgba(0,0,0,0.5);
   }
-  .volume-slider { width: 80px; height: 4px; -webkit-appearance: none; background: rgba(255,255,255,0.2); border-radius: 2px; cursor: pointer; }
-  .volume-slider::-webkit-slider-thumb { -webkit-appearance: none; width: 12px; height: 12px; background: #fff; border-radius: 50%; box-shadow: 0 0 10px rgba(0,0,0,0.5); }
+  .volume-slider { width: 80px; height: 4px; -webkit-appearance: none; appearance: none; background: rgba(255,255,255,0.2); border-radius: 2px; cursor: pointer; }
+  .volume-slider::-webkit-slider-thumb { -webkit-appearance: none; appearance: none; width: 12px; height: 12px; background: #fff; border-radius: 50%; box-shadow: 0 0 10px rgba(0,0,0,0.5); }
   .mute-btn { background: none; border: none; color: white; cursor: pointer; display: flex; align-items: center; padding: 0; }
   .mute-btn svg { width: 20px; height: 20px; }
   
