@@ -818,36 +818,68 @@
       display: flex;
       flex-wrap: nowrap;
       overflow-x: auto;
-      gap: 18px;
-      padding: 16px 4px 20px;
+      gap: 20px;
+      padding: 20px 24px;
       scroll-snap-type: x mandatory;
       scrollbar-width: none;
       -ms-overflow-style: none;
-      -webkit-overflow-scrolling: touch;
+      -webkit-overflow-scrolling: touch; /* Smoother iOS scroll */
+      min-height: 130px;
     }
     .stories-grid::-webkit-scrollbar { display: none; }
     
     .story-thumb {
       flex: 0 0 auto;
-      scroll-snap-align: start;
+      scroll-snap-align: center;
       display: flex;
       flex-direction: column;
       align-items: center;
-      gap: 10px;
+      gap: 12px;
       cursor: pointer;
-      transition: transform 0.2s ease;
+      transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
     }
-    .story-thumb:hover { transform: translateY(-4px); }
+    .story-thumb:hover { transform: scale(1.05); }
 
     .stories-count-badge {
       font-size: 11px;
-      font-weight: 700;
-      padding: 3px 12px;
+      font-weight: 800;
+      padding: 4px 14px;
       border-radius: var(--radius-full);
       background: linear-gradient(135deg, rgba(245,158,11,0.15), rgba(236,72,153,0.15));
-      border: 1px solid rgba(245,158,11,0.2);
+      border: 1px solid rgba(245,158,11,0.25);
       color: #f59e0b;
-      box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+      backdrop-filter: blur(4px);
+    }
+
+    /* Story Action Buttons (Redesigned) */
+    .story-action-btn {
+      flex: 1;
+      max-width: 140px;
+      height: 48px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+      background: rgba(255,255,255,0.08);
+      backdrop-filter: blur(20px);
+      border: 1px solid rgba(255,255,255,0.15);
+      border-radius: 16px;
+      color: #fff;
+      font-size: 13px;
+      font-weight: 700;
+      text-decoration: none;
+      transition: all 0.3s ease;
+      box-shadow: 0 8px 32px rgba(0,0,0,0.2);
+    }
+    .story-action-btn:hover {
+      background: rgba(255,255,255,0.15);
+      transform: translateY(-4px);
+      border-color: rgba(255,255,255,0.3);
+      box-shadow: 0 12px 40px rgba(0,0,0,0.4);
+    }
+    .story-action-btn svg {
+      width: 20px;
+      height: 20px;
     }
 
     .story-thumb-ring {
