@@ -1776,6 +1776,15 @@
   <!-- ═══════ STORY VIEWER MODAL ═══════ -->
   <div id="storyViewer" class="story-viewer-overlay" onclick="if(event.target===this)closeStoryViewer()">
     <div id="storyViewerBg" class="story-viewer-bg"></div>
+    
+    <!-- Navigation Arrows (Moved Outside for visibility) -->
+    <button class="story-nav-btn story-nav-prev" onclick="prevStory()" title="Önceki">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"/></svg>
+    </button>
+    <button class="story-nav-btn story-nav-next" onclick="nextStory()" title="Sonraki">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
+    </button>
+
     <div class="story-viewer">
       <!-- Progress Bars -->
       <div id="storyProgressContainer" class="story-progress-container"></div>
@@ -1791,14 +1800,6 @@
         </div>
         <button class="story-viewer-close" onclick="closeStoryViewer()" title="Kapat">✕</button>
       </div>
-
-      <!-- Navigation Arrows -->
-      <button class="story-nav-btn story-nav-prev" onclick="prevStory()" title="Önceki">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"/></svg>
-      </button>
-      <button class="story-nav-btn story-nav-next" onclick="nextStory()" title="Sonraki">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
-      </button>
 
       <!-- Click Zones (Mobile) -->
       <div class="story-click-zone story-click-prev" onclick="prevStory()"></div>
