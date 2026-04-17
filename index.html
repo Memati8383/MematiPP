@@ -2042,6 +2042,9 @@
         <span class="posts-header-title">Reels Videoları</span>
       </div>
       <div id="reelsGrid" class="posts-grid"></div>
+      <div id="reelsLoadMore" class="load-more-container" style="display: none; padding: 20px; justify-content: center;">
+        <button class="btn-secondary" onclick="loadMoreReels()" style="width: auto; padding: 12px 30px;">Daha Fazla Reels Yükle</button>
+      </div>
     </div>
 
     <!-- Son Gönderiler -->
@@ -2053,6 +2056,9 @@
         <span class="posts-header-title">Son Gönderiler</span>
       </div>
       <div id="postsGrid" class="posts-grid"></div>
+      <div id="postsLoadMore" class="load-more-container" style="display: none; padding: 20px; justify-content: center;">
+        <button class="btn-secondary" onclick="loadMorePosts()" style="width: auto; padding: 12px 30px;">Daha Fazla Gönderi Yükle</button>
+      </div>
     </div>
   </section>
 
@@ -2170,6 +2176,11 @@
     let currentModalType = 'p'; // 'p' or 'reel'
     let globalVolume = 1.0;
     let globalMuted = false;
+    
+    // Pagination State
+    let postsNextMaxId = '';
+    let reelsNextMaxId = '';
+    let currentSearchUsername = '';
 
     // ── Arama İşlemi ──
     const input = document.getElementById('searchInput');
@@ -2191,6 +2202,9 @@
       
       username = username.replace(/^@/, '').split(/[/?# ]/)[0];
       if (!username) { input.focus(); return; }
+      currentSearchUsername = username;
+      postsNextMaxId = '';
+      reelsNextMaxId = '';
 
       const loader = document.getElementById('loader');
       const result = document.getElementById('resultSection');
@@ -2368,6 +2382,15 @@
           postsCard.classList.add('active');
         } else {
           postsCard.classList.remove('active');
+        }
+
+        // Pagination Button
+        const postsLoadMore = document.getElementById('postsLoadMore');
+        if (d.next_max_id || d.cursor) {
+           postsNextMaxId = d.next_max_id || d.cursor;
+           postsLoadMore.style.display = 'flex';
+        } else {
+           postsLoadMore.style.display = 'none';
         }
 
         loader.classList.remove('active');
@@ -2826,50 +2849,9 @@
         }
 
         if (reelsArray.length > 0) {
-          reelsArray.forEach((item, i) => {
-            const media = item.node?.media || item.media || item;
-            const shortcode = media.code || media.shortcode;
-            if(!shortcode) return;
-
-            const c = media.image_versions2?.candidates || media.image_versions?.candidates || [];
-            const displayUrl = c[0]?.url || media.display_url || media.thumbnail_url;
-            if(!displayUrl) return;
-
-            const proxyThumb = `/api/proxy?src=${encodeURIComponent(displayUrl)}`;
-            const playCount = media.play_count || 0;
-            const likeCount = media.like_count || 0;
-
-            const a = document.createElement('a');
-            a.className = 'post-item';
-            a.href = 'javascript:void(0)';
-            a.onclick = (e) => {
-               if (e) { e.preventDefault(); e.stopPropagation(); }
-               if (shortcode) {
-                 currentModalList = reelsArray;
-                 currentModalIndex = i;
-                 currentModalType = 'reel';
-                 openPostModal(shortcode, 'reel', media);
-               } else {
-                 showToast('Bu reel görüntülenemiyor.');
-               }
-               return false;
-            };
-            a.innerHTML = `
-              <img src="${proxyThumb}" alt="Reel" loading="lazy" style="object-fit: cover; aspect-ratio: 9/16;"/>
-              <div class="video-indicator">
-                <svg viewBox="0 0 24 24"><path d="M8 5v14l11-7z" fill="white"/></svg>
-              </div>
-              <div class="post-overlay" style="flex-direction: column; gap: 8px;">
-                <div class="post-stat">
-                   <svg viewBox="0 0 24 24" fill="white"><path d="M8 5v14l11-7z"/></svg> ${formatCount(playCount)}
-                </div>
-                <div class="post-stat">
-                  <svg viewBox="0 0 24 24" fill="white"><path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/></svg> ${formatCount(likeCount)}
-                </div>
-              </div>
-            `;
-            grid.appendChild(a);
-          });
+          reelsNextMaxId = resData.next_max_id || resData.paging_info?.next_max_id || "";
+          renderReelsItems(reelsArray, true);
+          document.getElementById('reelsLoadMore').style.display = reelsNextMaxId ? 'flex' : 'none';
         } else {
           grid.innerHTML = `
             <div class="posts-empty">
@@ -2878,10 +2860,169 @@
               <div class="posts-empty-desc">Kullanıcıya ait Reels videosu bulunamadı.</div>
             </div>
           `;
+          document.getElementById('reelsLoadMore').style.display = 'none';
         }
       } catch (err) {
         console.error('Reels hatası:', err);
         grid.innerHTML = `<div class="posts-empty">Yüklenirken hata oluştu.</div>`;
+        document.getElementById('reelsLoadMore').style.display = 'none';
+      }
+    }
+
+    function renderReelsItems(items, clear = false) {
+      const grid = document.getElementById('reelsGrid');
+      if (clear) grid.innerHTML = '';
+      
+      items.forEach((item, i) => {
+        const media = item.node?.media || item.media || item;
+        const shortcode = media.code || media.shortcode;
+        if(!shortcode) return;
+
+        const c = media.image_versions2?.candidates || media.image_versions?.candidates || [];
+        const displayUrl = c[0]?.url || media.display_url || media.thumbnail_url;
+        if(!displayUrl) return;
+
+        const proxyThumb = `/api/proxy?src=${encodeURIComponent(displayUrl)}`;
+        const playCount = media.play_count || 0;
+        const likeCount = media.like_count || 0;
+
+        const a = document.createElement('a');
+        a.className = 'post-item';
+        a.href = 'javascript:void(0)';
+        a.onclick = (e) => {
+           if (e) { e.preventDefault(); e.stopPropagation(); }
+           if (shortcode) {
+             currentModalList = items;
+             currentModalIndex = i;
+             currentModalType = 'reel';
+             openPostModal(shortcode, 'reel', media);
+           } else {
+             showToast('Bu reel görüntülenemiyor.');
+           }
+           return false;
+        };
+        a.innerHTML = `
+          <img src="${proxyThumb}" alt="Reel" loading="lazy" style="object-fit: cover; aspect-ratio: 9/16;"/>
+          <div class="video-indicator">
+            <svg viewBox="0 0 24 24"><path d="M8 5v14l11-7z" fill="white"/></svg>
+          </div>
+          <div class="post-overlay" style="flex-direction: column; gap: 8px;">
+            <div class="post-stat">
+               <svg viewBox="0 0 24 24" fill="white"><path d="M8 5v14l11-7z"/></svg> ${formatCount(playCount)}
+            </div>
+            <div class="post-stat">
+              <svg viewBox="0 0 24 24" fill="white"><path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/></svg> ${formatCount(likeCount)}
+            </div>
+          </div>
+        `;
+        grid.appendChild(a);
+      });
+    }
+
+    async function loadMoreReels() {
+      if (!currentSearchUsername || !reelsNextMaxId) return;
+      const btn = document.querySelector('#reelsLoadMore button');
+      const originalText = btn.textContent;
+      btn.textContent = 'Yükleniyor...';
+      btn.disabled = true;
+
+      try {
+        const res = await fetch('/api/instagram/reels', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ username: currentSearchUsername, maxId: reelsNextMaxId })
+        });
+        const json = await res.json();
+        const resData = json.data || {};
+        
+        let reelsArray = [];
+        if (Array.isArray(resData)) reelsArray = resData;
+        else if (Array.isArray(resData.items)) reelsArray = resData.items;
+        else if (resData.result && Array.isArray(resData.result)) reelsArray = resData.result;
+
+        if (reelsArray.length > 0) {
+          reelsNextMaxId = resData.next_max_id || resData.paging_info?.next_max_id || "";
+          renderReelsItems(reelsArray, false);
+        } else {
+          reelsNextMaxId = "";
+        }
+        document.getElementById('reelsLoadMore').style.display = reelsNextMaxId ? 'flex' : 'none';
+      } catch (err) {
+        console.error('Load more reels error:', err);
+        showToast('Daha fazla reel yüklenirken hata oluştu.');
+      } finally {
+        btn.textContent = originalText;
+        btn.disabled = false;
+      }
+    }
+
+    async function loadMorePosts() {
+      if (!currentSearchUsername || !postsNextMaxId) return;
+      const btn = document.querySelector('#postsLoadMore button');
+      const originalText = btn.textContent;
+      btn.textContent = 'Yükleniyor...';
+      btn.disabled = true;
+
+      try {
+        const res = await fetch('/api/instagram/posts', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ username: currentSearchUsername, maxId: postsNextMaxId })
+        });
+        const json = await res.json();
+        const resData = json.data || {};
+        
+        let postsArray = [];
+        if (Array.isArray(resData)) postsArray = resData;
+        else if (Array.isArray(resData.items)) postsArray = resData.items;
+        else if (resData.result && Array.isArray(resData.result)) postsArray = resData.result;
+
+        if (postsArray.length > 0) {
+          // RapidAPI response formatına göre max_id/cursor yakala
+          postsNextMaxId = resData.next_max_id || resData.paging_info?.next_max_id || resData.cursor || "";
+          
+          const grid = document.getElementById('postsGrid');
+          postsArray.forEach((post, idx) => {
+            const item = document.createElement('a');
+            item.className = 'post-item';
+            item.href = 'javascript:void(0)';
+            item.onclick = (e) => {
+              if (e) { e.preventDefault(); e.stopPropagation(); }
+              const shortcode = post.shortcode || post.node?.shortcode || post.code;
+              if (shortcode) {
+                currentModalList = postsArray;
+                currentModalIndex = idx;
+                currentModalType = 'p';
+                openPostModal(shortcode, 'p', post);
+              }
+            };
+            
+            const displayUrl = post.display_url || post.thumbnail_src || post.node?.display_url || "";
+            const proxyUrl = `/api/proxy?src=${encodeURIComponent(displayUrl)}`;
+            const isVideo = post.is_video || post.node?.is_video || false;
+            const likes = post.like_count || post.node?.edge_media_preview_like?.count || 0;
+            const comments = post.comment_count || post.node?.edge_media_to_comment?.count || 0;
+
+            item.innerHTML = `
+              <img src="${proxyUrl}" alt="Gönderi" loading="lazy"/>
+              ${isVideo ? '<div class="video-indicator"><svg viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg></div>' : ''}
+              <div class="post-overlay">
+                <div class="post-stat"><svg viewBox="0 0 24 24"><path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/></svg> ${formatCount(likes)}</div>
+                <div class="post-stat"><svg viewBox="0 0 24 24"><path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z" fill="white"/></svg> ${formatCount(comments)}</div>
+              </div>
+            `;
+            grid.appendChild(item);
+          });
+        } else {
+          postsNextMaxId = "";
+        }
+        document.getElementById('postsLoadMore').style.display = postsNextMaxId ? 'flex' : 'none';
+      } catch (err) {
+        console.error('Load more posts error:', err);
+        showToast('Daha fazla gönderi yüklenirken hata oluştu.');
+      } finally {
+        btn.textContent = originalText;
+        btn.disabled = false;
       }
     }
 

@@ -151,7 +151,9 @@ app.get('/api/search', async (req, res) => {
                     category_name: userData.category_name || null,
                     business_category_name: userData.business_category_name || null,
                     overall_category_name: userData.overall_category_name || null,
-                    recent_posts: recentPosts
+                    recent_posts: recentPosts,
+                    next_max_id: userData.edge_owner_to_timeline_media?.page_info?.end_cursor || null,
+                    has_next_page: userData.edge_owner_to_timeline_media?.page_info?.has_next_page || false
                 }
             });
         } else {
