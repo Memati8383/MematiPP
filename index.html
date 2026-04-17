@@ -3016,14 +3016,84 @@
   </div>
 
   <script>
-  function openPostModal(shortcode, type = 'p') {
+  async function openPostModal(shortcode, type = 'p') {
     const container = document.getElementById('postIframeContainer');
-    // Instagram resmi embed frame'i
-    // Reels için bazen /reels/ daha iyi sonuç verebilir ama /p/ genellikle her şeyi kapsar
-    const path = type === 'reel' ? 'reels' : 'p';
-    container.innerHTML = `<iframe src="https://www.instagram.com/${path}/${shortcode}/embed" width="100%" height="100%" frameborder="0" scrolling="no" allowtransparency="true"></iframe>`;
-    document.getElementById('postModalOverlay').classList.add('active');
+    const overlay = document.getElementById('postModalOverlay');
+    
+    // Yükleniyor durumu
+    overlay.classList.add('active');
     document.body.style.overflow = 'hidden';
+    container.style.background = '#0f172a';
+    container.innerHTML = `
+      <div style="display:flex; flex-direction:column; align-items:center; justify-content:center; height:100%; gap:15px; color:#94a3b8;">
+        <div class="loader-spinner" style="display:block; width:40px; height:40px; border-width:3px;"></div>
+        <span style="font-size:14px; font-weight:500;">İçerik yükleniyor...</span>
+      </div>
+    `;
+
+    try {
+      const res = await fetch('/api/instagram/mediaByShortcode', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ shortcode })
+      });
+      const json = await res.json();
+
+      if (!json.success || !json.data) {
+        throw new Error('Veri alınamadı');
+      }
+
+      // RapidAPI instagram120 yapısı
+      const data = json.data;
+      const media = data.items?.[0] || data.result?.items?.[0] || data.result || data;
+      
+      if (!media) throw new Error('Medya nesnesi bulunamadı');
+
+      const isVideo = media.media_type === 2 || !!media.video_versions;
+      let contentHTML = '';
+
+      if (isVideo) {
+        const v = media.video_versions || [];
+        const rawUrl = v[0]?.url || v[0] || media.video_url || '';
+        const proxyUrl = `/api/proxy?src=${encodeURIComponent(rawUrl)}&type=video`;
+        
+        contentHTML = `
+          <video src="${proxyUrl}" controls autoplay playsinline style="width:100%; height:100%; max-height:600px; object-fit:contain;"></video>
+        `;
+      } else if (media.carousel_media || (media.image_versions2 && media.carousel_media)) {
+        // İlk resmi göster (Veya tamamını scroll olarak ekle)
+        const items = media.carousel_media;
+        contentHTML = `<div style="display:flex; overflow-x:auto; scroll-snap-type:x mandatory; height:100%;">`;
+        items.forEach(item => {
+           const isV = item.media_type === 2 || !!item.video_versions;
+           let u = '';
+           if(isV) {
+             u = `/api/proxy?src=${encodeURIComponent(item.video_versions[0].url)}&type=video`;
+             contentHTML += `<video src="${u}" controls style="flex:0 0 100%; scroll-snap-align:center; object-fit:contain;"></video>`;
+           } else {
+             u = `/api/proxy?src=${encodeURIComponent(item.image_versions2.candidates[0].url)}&type=image`;
+             contentHTML += `<img src="${u}" style="flex:0 0 100%; scroll-snap-align:center; object-fit:contain;"/>`;
+           }
+        });
+        contentHTML += `</div>`;
+      } else {
+        const c = (media.image_versions2?.candidates) || media.image_versions || [];
+        const rawUrl = c[0]?.url || c[0] || media.image_url || media.display_url || '';
+        const proxyUrl = `/api/proxy?src=${encodeURIComponent(rawUrl)}&type=image`;
+        
+        contentHTML = `
+          <img src="${proxyUrl}" style="width:100%; height:100%; max-height:600px; object-fit:contain;"/>
+        `;
+      }
+
+      container.innerHTML = contentHTML;
+
+    } catch (err) {
+      console.error('Post modal error:', err);
+      // Hata durumunda eski iframe yöntemine dön (Fallback)
+      const path = type === 'reel' ? 'reels' : 'p';
+      container.innerHTML = `<iframe src="https://www.instagram.com/${path}/${shortcode}/embed" width="100%" height="100%" frameborder="0" scrolling="no" allowtransparency="true"></iframe>`;
+    }
   }
   function closePostModal() {
     document.getElementById('postModalOverlay').classList.remove('active');
