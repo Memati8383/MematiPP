@@ -365,13 +365,35 @@ app.post('/api/instagram/userInfo', async (req, res) => {
 });
 
 app.post('/api/instagram/mediaByShortcode', async (req, res) => {
-    try {
-        // mediaByShortcode standard but some RapidAPI configs use mediaByShortcode
-        const response = await axios.post(`${RAPIDAPI_BASE}/mediaByShortcode`, { shortcode: req.body.shortcode }, { headers: RAPIDAPI_HEADERS });
-        res.json({ success: true, data: response.data });
-    } catch (e) {
-        res.status(e.response?.status || 500).json({ success: false, error: e.message, details: e.response?.data });
+    const shortcode = req.body.shortcode;
+    const strategies = [
+        // Strategy 1: POST to mediaByshortcode (Most common for this specific API)
+        () => axios.post(`${RAPIDAPI_BASE}/mediaByshortcode`, { shortcode }, { headers: RAPIDAPI_HEADERS }),
+        // Strategy 2: POST to mediaByShortcode (Standard camelCase)
+        () => axios.post(`${RAPIDAPI_BASE}/mediaByShortcode`, { shortcode }, { headers: RAPIDAPI_HEADERS }),
+        // Strategy 3: GET to media with param (Alternative)
+        () => axios.get(`${RAPIDAPI_BASE}/media`, { params: { shortcode }, headers: RAPIDAPI_HEADERS }),
+        // Strategy 4: GET to mediaByshortcode with param
+        () => axios.get(`${RAPIDAPI_BASE}/mediaByshortcode`, { params: { shortcode }, headers: RAPIDAPI_HEADERS })
+    ];
+
+    let lastError = null;
+    for (const strategy of strategies) {
+        try {
+            const response = await strategy();
+            if (response.data) {
+                return res.json({ success: true, data: response.data });
+            }
+        } catch (e) {
+            lastError = e;
+        }
     }
+
+    res.status(lastError?.response?.status || 500).json({ 
+        success: false, 
+        error: lastError?.message || 'Tüm yöntemler başarısız oldu',
+        details: lastError?.response?.data 
+    });
 });
 
 app.post('/api/instagram/reels', async (req, res) => {
