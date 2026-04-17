@@ -97,41 +97,123 @@ app.get('/api/search', async (req, res) => {
     }
 });
 
-// ── Stories API ──
+// ── Stories API (Geliştirilmiş) ──
 // Kullanım: /api/stories?userId=<instagram_user_id>
 // userId'yi önce /api/search ile alın (data.id alanı)
+
+// Genişletilmiş Instagram başlıkları (stories için daha kapsamlı)
+const igStoriesHeaders = {
+    'x-ig-app-id': '936619743392459',
+    'x-ig-www-claim': '0',
+    'x-requested-with': 'XMLHttpRequest',
+    'x-asbd-id': '129477',
+    'x-csrftoken': 'missing',
+    'User-Agent': 'Instagram 275.0.0.27.98 Android (33/13; 420dpi; 1080x2400; samsung; SM-G991B; o1s; exynos2100; en_US; 458229258)',
+    'Accept': '*/*',
+    'Accept-Language': 'en-US,en;q=0.9',
+    'Accept-Encoding': 'gzip, deflate, br',
+    'Origin': 'https://www.instagram.com',
+    'Referer': 'https://www.instagram.com/',
+    'Sec-Fetch-Dest': 'empty',
+    'Sec-Fetch-Mode': 'cors',
+    'Sec-Fetch-Site': 'same-site'
+};
+
+// Birden fazla proxy denemesi yapan yardımcı fonksiyon
+async function tryWithProxies(targetUrl, headers, timeout = 15000) {
+    const proxyStrategies = [
+        // Strateji 1: corsproxy.io
+        (url) => `https://corsproxy.io/?${encodeURIComponent(url)}`,
+        // Strateji 2: allorigins (JSON wrapper)
+        (url) => `https://api.allorigins.win/raw?url=${encodeURIComponent(url)}`,
+        // Strateji 3: corsproxy.org
+        (url) => `https://corsproxy.org/?${encodeURIComponent(url)}`,
+        // Strateji 4: cors-anywhere benzeri
+        (url) => `https://api.codetabs.com/v1/proxy?quest=${encodeURIComponent(url)}`
+    ];
+
+    let lastError = null;
+
+    for (const makeProxy of proxyStrategies) {
+        try {
+            const proxyUrl = makeProxy(targetUrl);
+            console.log(`[Stories] Deneniyor: ${proxyUrl.substring(0, 80)}...`);
+            const response = await axios.get(proxyUrl, {
+                headers,
+                timeout,
+                validateStatus: (s) => s < 500 // 4xx'leri de yakala
+            });
+
+            // Başarılı yanıt veya anlamlı hata
+            if (response.status === 200 && response.data) {
+                return response;
+            }
+
+            console.log(`[Stories] Proxy ${response.status} döndü, sıradaki deneniyor...`);
+        } catch (err) {
+            lastError = err;
+            console.log(`[Stories] Proxy hatası: ${err.message}, sıradaki deneniyor...`);
+        }
+    }
+
+    // Hiçbiri çalışmadıysa son hatayı fırlat
+    throw lastError || new Error('Tüm proxy denemeleri başarısız');
+}
+
 app.get('/api/stories', async (req, res) => {
     const userId = (req.query.userId || '').replace(/[^0-9]/g, '');
     if (!userId) return res.status(400).json({ error: 'userId gerekli (sayısal Instagram ID)' });
 
     try {
+        // Birincil endpoint: reels_media
         const targetUrl = `https://i.instagram.com/api/v1/feed/reels_media/?reel_ids=${userId}`;
-        const proxyUrl = `https://corsproxy.io/?${encodeURIComponent(targetUrl)}`;
 
-        const response = await axios.get(proxyUrl, {
-            headers: igHeaders,
-            timeout: 15000
-        });
-
-        const reels = response.data?.reels || response.data?.reels_media;
-
-        // API bazen reels_media dizisi, bazen reels objesi döner
+        let response;
         let items = [];
 
+        try {
+            response = await tryWithProxies(targetUrl, igStoriesHeaders);
+        } catch (primaryErr) {
+            console.log('[Stories] Birincil endpoint başarısız, alternatif deneniyor...');
+            // Alternatif endpoint: user story feed
+            const altUrl = `https://i.instagram.com/api/v1/feed/user/${userId}/story/`;
+            response = await tryWithProxies(altUrl, igStoriesHeaders);
+        }
+
+        const data = response.data;
+
+        // Yanıt yapısını kontrol et ve items dizisini çıkar
+        // Format 1: { reels: { "userId": { items: [...] } } }
+        const reels = data?.reels || data?.reels_media;
+
         if (Array.isArray(reels)) {
-            // reels_media formatı: [{ id, items: [...] }]
             const reel = reels.find(r => String(r.id) === String(userId) || String(r.user?.pk) === String(userId));
             items = reel?.items || reels[0]?.items || [];
         } else if (reels && typeof reels === 'object') {
-            // reels formatı: { "userId": { items: [...] } }
             const reel = reels[userId] || Object.values(reels)[0];
             items = reel?.items || [];
         }
 
+        // Format 2: { reel: { items: [...] } } (alternatif endpoint)
+        if (!items.length && data?.reel?.items) {
+            items = data.reel.items;
+        }
+
+        // Format 3: Doğrudan items dizisi
+        if (!items.length && Array.isArray(data?.items)) {
+            items = data.items;
+        }
+
         if (!items.length) {
-            return res.status(404).json({
+            // Yanıt geldi ama boş — muhtemelen auth gerekiyor
+            const hasReelsKey = !!(data?.reels || data?.reels_media || data?.reel);
+            return res.json({
                 success: false,
-                error: 'Story bulunamadı. Hesap private olabilir veya aktif story yok.'
+                error: hasReelsKey
+                    ? 'Bu kullanıcının aktif hikayesi bulunmuyor.'
+                    : 'Hikayelere erişim için Instagram oturum açmayı gerektirebilir.',
+                requires_auth: !hasReelsKey,
+                debug_keys: Object.keys(data || {})
             });
         }
 
@@ -162,7 +244,6 @@ app.get('/api/stories', async (req, res) => {
                 width: item.original_width || null,
                 height: item.original_height || null,
                 has_audio: item.has_audio || false,
-                // Sticker / mention bilgileri varsa ekle
                 mentions: item.reel_mentions?.map(m => m.user?.username).filter(Boolean) || [],
                 hashtags: item.story_hashtags?.map(h => h.hashtag?.name).filter(Boolean) || []
             };
@@ -177,7 +258,7 @@ app.get('/api/stories', async (req, res) => {
     } catch (e) {
         console.error('Stories Hatası:', e.message);
         const status = e.response?.status || 500;
-        let errorMessage = 'Story yüklenemedi. Lütfen daha sonra deneyin.';
+        let errorMessage = 'Hikayeler yüklenemedi. Lütfen daha sonra deneyin.';
 
         if (status === 404) errorMessage = 'Kullanıcı bulunamadı';
         if (status === 401) errorMessage = 'Instagram oturum açmayı gerektiriyor';

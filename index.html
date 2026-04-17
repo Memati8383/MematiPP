@@ -1955,14 +1955,29 @@
         const json = await res.json();
 
         if (!json.success || !json.data || json.data.length === 0) {
-          storiesContent.innerHTML = `
-            <div class="stories-empty">
-              <div class="stories-empty-icon">📷</div>
-              <div class="stories-empty-title">Aktif Hikaye Yok</div>
-              <div class="stories-empty-desc">Bu kullanıcının şu an paylaştığı aktif bir hikaye bulunmuyor.</div>
-            </div>
-          `;
-          countBadge.textContent = '0';
+          const isAuthIssue = json.requires_auth === true;
+          const errorMsg = json.error || '';
+          
+          if (isAuthIssue) {
+            // Instagram oturum gerektiyor
+            storiesContent.innerHTML = `
+              <div class="stories-empty">
+                <div class="stories-empty-icon">🔐</div>
+                <div class="stories-empty-title">Oturum Gerekli</div>
+                <div class="stories-empty-desc">Instagram hikayelere erişim için oturum açmayı gerektiriyor. Bu bir Instagram kısıtlamasıdır.</div>
+              </div>
+            `;
+            countBadge.textContent = '–';
+          } else {
+            storiesContent.innerHTML = `
+              <div class="stories-empty">
+                <div class="stories-empty-icon">📷</div>
+                <div class="stories-empty-title">Aktif Hikaye Yok</div>
+                <div class="stories-empty-desc">${errorMsg || 'Bu kullanıcının şu an paylaştığı aktif bir hikaye bulunmuyor.'}</div>
+              </div>
+            `;
+            countBadge.textContent = '0';
+          }
           return;
         }
 
