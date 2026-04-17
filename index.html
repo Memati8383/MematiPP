@@ -1200,6 +1200,24 @@
       color: rgba(255,255,255,0.7); font-size: 13px; font-weight: 400;
       margin-left: 6px;
     }
+    .story-viewer-header-actions {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .story-viewer-mute {
+      width: 34px; height: 34px;
+      display: flex; align-items: center; justify-content: center;
+      background: rgba(255,255,255,0.12);
+      backdrop-filter: blur(10px);
+      border: 1px solid rgba(255,255,255,0.1);
+      border-radius: 50%;
+      color: #fff;
+      cursor: pointer; transition: all 0.2s ease;
+    }
+    .story-viewer-mute:hover { background: rgba(255,255,255,0.22); transform: scale(1.1); }
+    .story-viewer-mute svg { width: 18px; height: 18px; }
+
     .story-viewer-close {
       width: 34px; height: 34px;
       display: flex; align-items: center; justify-content: center;
@@ -1793,7 +1811,13 @@
             <span id="storyViewerTime" class="story-viewer-time"></span>
           </div>
         </div>
-        <button class="story-viewer-close" onclick="closeStoryViewer()" title="Kapat">✕</button>
+        <div class="story-viewer-header-actions">
+          <button id="storyMuteBtn" class="story-viewer-mute" onclick="toggleStoryMute()" title="Sesi Aç/Kapat">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="mute-icon-on"><path d="M11 5L6 9H2v6h4l5 4V5zM19.07 4.93a10 10 0 010 14.14M15.54 8.46a5 5 0 010 7.07"/></svg>
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="mute-icon-off" style="display:none;"><path d="M11 5L6 9H2v6h4l5 4V5zM23 9l-6 6M17 9l6 6"/></svg>
+          </button>
+          <button class="story-viewer-close" onclick="closeStoryViewer()" title="Kapat">✕</button>
+        </div>
       </div>
 
       <!-- Click Zones (Mobile) -->
@@ -2102,8 +2126,25 @@
     let currentStoryIndex = 0;
     let storyTimer = null;
     let storyPaused = false;
+    let isStoryMuted = false;
     let cachedUsername = '';
     let cachedAvatar = '';
+
+    function toggleStoryMute() {
+      isStoryMuted = !isStoryMuted;
+      const video = document.querySelector('#storyViewerMedia video');
+      if (video) video.muted = isStoryMuted;
+      
+      const onIcon = document.querySelector('.mute-icon-on');
+      const offIcon = document.querySelector('.mute-icon-off');
+      if (isStoryMuted) {
+        onIcon.style.display = 'none';
+        offIcon.style.display = 'block';
+      } else {
+        onIcon.style.display = 'block';
+        offIcon.style.display = 'none';
+      }
+    }
 
     // ── Stories Yükle ──
     async function loadStories(userId, username, avatarUrl) {
@@ -2333,7 +2374,7 @@
           mediaContainer.classList.remove('loading');
           mediaContainer.classList.add('loaded');
           videoEl.play().catch(e => console.log("Autoplay blocked:", e));
-          videoEl.muted = false;
+          videoEl.muted = isStoryMuted;
           if (activeBar) activeBar.classList.remove('paused');
           // Timer'ı video hazır olduğunda başlat
           storyTimer = setTimeout(nextStory, duration + 1000);
