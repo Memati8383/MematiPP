@@ -58,6 +58,12 @@
       --transition: 0.4s cubic-bezier(0.16, 1, 0.3, 1);
       --navbar-bg: rgba(15, 23, 42, 0.6);
       --navbar-border: rgba(255, 255, 255, 0.08);
+
+      /* Footer Variables */
+      --footer-link-bg: rgba(255, 255, 255, 0.03);
+      --footer-link-hover: rgba(255, 255, 255, 0.08);
+      --footer-link-border: rgba(255, 255, 255, 0.05);
+      --footer-border-gradient: rgba(56, 189, 248, 0.2);
     }
 
     /* ── Light Mode Glass ── */
@@ -73,6 +79,12 @@
       --shadow-glass: 0 8px 32px 0 rgba(0, 0, 0, 0.08);
       --navbar-bg: rgba(255, 255, 255, 0.4);
       --navbar-border: rgba(255, 255, 255, 0.5);
+
+      /* Footer Light Mode */
+      --footer-link-bg: rgba(255, 255, 255, 0.6);
+      --footer-link-hover: rgba(255, 255, 255, 0.8);
+      --footer-link-border: rgba(56, 189, 248, 0.3);
+      --footer-border-gradient: rgba(56, 189, 248, 0.4);
     }
 
     * { margin: 0; padding: 0; box-sizing: border-box; }
@@ -459,41 +471,81 @@
 
     /* ── Alt Bilgi ── */
     .footer {
-      padding: 32px 24px; text-align: center;
-      border-top: 1px solid var(--border);
+      padding: 80px 24px 48px;
       position: relative;
+      margin-top: 60px;
+      overflow: hidden;
+    }
+    .footer::before {
+      content: '';
+      position: absolute;
+      top: 0; left: 50%;
+      transform: translateX(-50%);
+      width: 100%; max-width: 1200px;
+      height: 1px;
+      background: linear-gradient(90deg, transparent, var(--footer-border-gradient), transparent);
     }
     .footer-inner {
       max-width: 1200px; margin: 0 auto;
-      display: flex; flex-direction: column; align-items: center; gap: 16px;
+      display: flex; flex-direction: column; align-items: center; gap: 40px;
     }
     .footer-brand {
-      display: flex; align-items: center; gap: 8px;
-      font-weight: 700; font-size: 14px;
+      display: flex; flex-direction: column; align-items: center; gap: 16px;
+      text-decoration: none;
     }
     .footer-brand-icon {
-      width: 24px; height: 24px; border-radius: 6px;
+      width: 56px; height: 56px; border-radius: 16px;
       background: var(--gradient-main);
       display: flex; align-items: center; justify-content: center;
-      font-size: 11px; font-weight: 900; color: white;
+      font-size: 28px; font-weight: 900; color: white;
+      box-shadow: 0 10px 30px rgba(56, 189, 248, 0.4);
+      transition: all var(--transition);
     }
-    .footer-links {
-      display: flex; gap: 24px; align-items: center;
+    .footer-brand:hover .footer-brand-icon {
+      transform: scale(1.1) rotate(5deg);
+      box-shadow: 0 15px 40px rgba(56, 189, 248, 0.6);
     }
-    .footer-link {
-      color: var(--text-muted); text-decoration: none; font-size: 12px;
-      font-weight: 500; transition: color var(--transition);
-      display: flex; align-items: center; gap: 5px;
+    .footer-brand-text {
+      font-size: 26px; font-weight: 800; letter-spacing: -1px;
+      background: var(--gradient-main);
+      -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+      background-clip: text;
     }
-    .footer-link:hover { color: var(--text-primary); }
-    .footer-link svg { width: 14px; height: 14px; }
+    .footer-nav {
+      display: flex; flex-wrap: wrap; justify-content: center; gap: 16px;
+    }
+    .footer-link-premium {
+      display: flex; align-items: center; gap: 12px;
+      padding: 14px 28px; border-radius: var(--radius-xl);
+      background: var(--footer-link-bg);
+      border: 1px solid var(--footer-link-border);
+      color: var(--text-secondary); text-decoration: none;
+      font-size: 14px; font-weight: 600;
+      transition: all var(--transition);
+      backdrop-filter: blur(10px);
+    }
+    .footer-link-premium:hover {
+      background: var(--footer-link-hover);
+      border-color: rgba(56, 189, 248, 0.4);
+      color: var(--text-primary);
+      transform: translateY(-5px);
+      box-shadow: 0 15px 35px rgba(0, 0, 0, 0.3);
+    }
+    .footer-link-premium svg { width: 20px; height: 20px; transition: transform 0.3s ease; }
+    .footer-link-premium:hover svg { transform: scale(1.2) rotate(-5deg); }
+    
+    .footer-bottom {
+      width: 100%; border-top: 1px solid rgba(255, 255, 255, 0.05);
+      padding-top: 32px; display: flex; flex-direction: column; align-items: center; gap: 10px;
+    }
     .footer-copy {
-      font-size: 11px; color: var(--text-muted);
+      font-size: 13px; color: var(--text-muted); font-weight: 400; letter-spacing: 0.3px;
     }
     .footer-copy a {
-      color: var(--accent-violet-light); text-decoration: none;
+      color: var(--accent-blue); text-decoration: none; font-weight: 600;
+      transition: all 0.3s ease;
     }
-    .footer-copy a:hover { text-decoration: underline; }
+    .footer-copy a:hover { color: var(--accent-indigo); text-decoration: underline; }
 
     /* ── Tam Ekran Görüntüleyici ── */
     .modal-overlay {
@@ -575,9 +627,10 @@
       .hd-actions { flex-direction: column; }
       .btn-primary, .btn-secondary { padding: 13px 16px; font-size: 13px; min-height: 48px; }
       .hd-resolution { font-size: 11px; }
-      .footer { padding: 24px 16px; }
-      .footer-links { flex-wrap: wrap; justify-content: center; gap: 16px; }
-      .footer-copy { font-size: 10px; }
+      .footer { padding: 48px 16px 32px; }
+      .footer-nav { flex-direction: column; width: 100%; gap: 12px; }
+      .footer-link-premium { justify-content: center; width: 100%; }
+      .footer-copy { font-size: 11px; }
       .modal-overlay { padding: 12px; }
       .modal-img { border-radius: var(--radius-md); }
     }
@@ -2012,24 +2065,31 @@
   <!-- ═══════ ALT BİLGİ ═══════ -->
   <footer class="footer">
     <div class="footer-inner">
-      <div class="footer-brand">
+      <a href="/" class="footer-brand">
         <div class="footer-brand-icon">P</div>
-        <span style="background:var(--gradient-main);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;">MematiPP</span>
-      </div>
-        <a href="https://github.com/Memati8383" target="_blank" rel="noopener" class="footer-link">
+        <span class="footer-brand-text">MematiPP</span>
+      </a>
+
+      <div class="footer-nav">
+        <a href="https://github.com/Memati8383" target="_blank" rel="noopener" class="footer-link-premium">
           <svg viewBox="0 0 16 16" fill="currentColor"><path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0016 8c0-4.42-3.58-8-8-8z"/></svg>
           GitHub
         </a>
-        <a href="https://instagram.com/ferit22901" target="_blank" rel="noopener" class="footer-link">
+        <a href="https://instagram.com/ferit22901" target="_blank" rel="noopener" class="footer-link-premium">
           <svg viewBox="0 0 448 512" fill="currentColor"><path d="M224.1 141c-63.6 0-114.9 51.3-114.9 114.9s51.3 114.9 114.9 114.9S339 319.5 339 255.9 287.7 141 224.1 141zm0 189.6c-41.1 0-74.7-33.5-74.7-74.7s33.5-74.7 74.7-74.7 74.7 33.5 74.7 74.7-33.6 74.7-74.7 74.7zm146.4-194.3c0 14.9-12 26.8-26.8 26.8-14.9 0-26.8-12-26.8-26.8s12-26.8 26.8-26.8 26.8 12 26.8 26.8zm76.1 27.2c-1.7-35.9-9.9-67.7-36.2-93.9-26.2-26.2-58-34.4-93.9-36.2-37-2.1-147.9-2.1-184.9 0-35.8 1.7-67.6 9.9-93.9 36.1s-34.4 58-36.2 93.9c-2.1 37-2.1 147.9 0 184.9 1.7 35.9 9.9 67.7 36.2 93.9s58 34.4 93.9 36.2c37 2.1 147.9 2.1 184.9 0 35.9-1.7 67.7-9.9 93.9-36.2 26.2-26.2 34.4-58 36.2-93.9 2.1-37 2.1-147.8 0-184.8zM398.8 388c-7.8 19.6-22.9 34.7-42.6 42.6-29.5 11.7-99.5 9-132.1 9s-102.7 2.6-132.1-9c-19.6-7.8-34.7-22.9-42.6-42.6-11.7-29.5-9-99.5-9-132.1s-2.6-102.7 9-132.1c7.8-19.6 22.9-34.7 42.6-42.6 29.5-11.7 99.5-9 132.1-9s102.7-2.6 132.1 9c19.6 7.8 34.7 22.9 42.6 42.6 11.7 29.5 9 99.5 9 132.1s2.7 102.7-9 132.1z"/></svg>
           Instagram
         </a>
-        <a href="https://github.com/Memati8383/MematiPP" target="_blank" rel="noopener" class="footer-link">
+        <a href="https://github.com/Memati8383/MematiPP" target="_blank" rel="noopener" class="footer-link-premium">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="16 18 22 12 16 6"></polyline><polyline points="8 6 2 12 8 18"></polyline></svg>
           Kaynak Kodu
         </a>
-      <p class="footer-copy">
-        © 2026 <a href="https://github.com/Memati8383" target="_blank">Memati8383</a> · Tüm hakları saklıdır
-      </p>
+      </div>
+
+      <div class="footer-bottom">
+        <p class="footer-copy">
+          © 2026 <a href="https://github.com/Memati8383" target="_blank">Memati8383</a> · Tüm hakları saklıdır
+        </p>
+      </div>
     </div>
   </footer>
 
