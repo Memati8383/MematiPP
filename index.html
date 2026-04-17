@@ -3092,11 +3092,11 @@
   .post-modal-volume-ctrl {
     position: absolute; bottom: 85px; right: 20px;
     display: flex; align-items: center; gap: 10px;
-    background: rgba(15, 23, 42, 0.85); padding: 10px 15px;
+    background: rgba(15, 23, 42, 0.9); padding: 10px 15px;
     border-radius: 20px; backdrop-filter: blur(15px);
-    border: 1px solid rgba(56, 189, 248, 0.2);
-    z-index: 101; transition: all 0.3s;
-    box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+    border: 1px solid rgba(56, 189, 248, 0.3);
+    z-index: 100001; transition: all 0.3s;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.5);
   }
   .volume-slider { width: 80px; height: 4px; -webkit-appearance: none; background: rgba(255,255,255,0.2); border-radius: 2px; cursor: pointer; }
   .volume-slider::-webkit-slider-thumb { -webkit-appearance: none; width: 12px; height: 12px; background: #fff; border-radius: 50%; box-shadow: 0 0 10px rgba(0,0,0,0.5); }
@@ -3183,38 +3183,38 @@
       if (isVideo) {
         let videoUrl = '';
         
-        // Agresif Video URL araması (İç içe geçen yapılarda bile bulabilmek için)
-        const findVideo = (obj) => {
-            if (!obj) return null;
-            if (typeof obj === 'string' && (obj.includes('.mp4') || obj.includes('video'))) return obj;
-            
-            // Standart yollar
-            if (obj.video_url) return obj.video_url;
-            if (obj.url && obj.url.includes('.mp4')) return obj.url;
-            
-            // Video sürümleri dizisi (En yüksek çözünürlük genellikle ilk elemandır)
-            if (Array.isArray(obj.video_versions) && obj.video_versions.length > 0) {
-                const v = obj.video_versions[0];
-                return v.url || v;
+        // Derin Video URL araması (Rekürsif ve çok daha agresif)
+        const findVideoDeep = (o) => {
+            if (!o) return null;
+            if (typeof o === 'string') {
+              if (o.includes('.mp4') || (o.includes('fbcdn.net') && o.includes('_v.'))) return o;
+              return null;
             }
-            
-            // Dash manifestten (XML içinden) BASE URL çekme
-            if (obj.video_dash_manifest) {
-                const m = obj.video_dash_manifest.match(/<BaseURL>(.*?)<\/BaseURL>/);
-                if (m) return m[1];
+            if (Array.isArray(o)) {
+                for (let i of o) {
+                    const found = findVideoDeep(i);
+                    if (found) return found;
+                }
+                return null;
             }
-
-            // Carousel elemanı ise ilk slaytın videosuna bak
-            if (Array.isArray(obj.carousel_media) && obj.carousel_media[0]) {
-                return findVideo(obj.carousel_media[0]);
+            if (typeof o === 'object') {
+                // Öncelikli anahtarlar
+                const priorityKeys = ['video_url', 'video_versions', 'url', 'video_dash_manifest', 'display_url'];
+                for (let k of priorityKeys) {
+                    const found = findVideoDeep(o[k]);
+                    if (found) return found;
+                }
+                // Diğer tüm anahtarlar
+                for (let k in o) {
+                    if (priorityKeys.includes(k)) continue;
+                    const found = findVideoDeep(o[k]);
+                    if (found) return found;
+                }
             }
-
             return null;
         };
 
-        videoUrl = findVideo(media);
-        if (!videoUrl && media.node) videoUrl = findVideo(media.node);
-        if (!videoUrl && media.media) videoUrl = findVideo(media.media);
+        videoUrl = findVideoDeep(media);
         
         if (!videoUrl) throw new Error('Video adresi tespit edilemedi');
 
@@ -3224,8 +3224,10 @@
             <video src="${proxyUrl}" id="modalVideo" playsinline style="max-width:100%; max-height:100%;"></video>
           </div>
         `;
-        document.getElementById('postVolumeCtrl').style.display = 'flex';
-        document.getElementById('postVolumeCtrl').style.opacity = '1';
+        const vCtrl = document.getElementById('postVolumeCtrl');
+        vCtrl.style.display = 'flex';
+        vCtrl.style.opacity = '1';
+        vCtrl.style.zIndex = '100002';
         setTimeout(() => {
             const v = document.getElementById('modalVideo');
             if(v) {
