@@ -318,9 +318,14 @@ app.post('/api/instagram/highlights', async (req, res) => {
 
 app.post('/api/instagram/highlightStories', async (req, res) => {
     try {
-        const response = await axios.post(`${RAPIDAPI_BASE}/highlightStories`, { highlightId: req.body.highlightId }, { headers: RAPIDAPI_HEADERS });
+        let hId = req.body.highlightId;
+        if (hId && !hId.startsWith('highlight:')) {
+            hId = 'highlight:' + hId;
+        }
+        const response = await axios.post(`${RAPIDAPI_BASE}/highlightStories`, { highlightId: hId }, { headers: RAPIDAPI_HEADERS });
         res.json({ success: true, data: response.data });
     } catch (e) {
+        console.error('HighlightStories Error:', e.message);
         res.status(e.response?.status || 500).json({ success: false, error: e.message, details: e.response?.data });
     }
 });

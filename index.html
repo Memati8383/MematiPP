@@ -2040,7 +2040,20 @@
     input.addEventListener('keydown', e => { if (e.key === 'Enter') search(); });
 
     async function search() {
-      const username = input.value.trim().replace(/^@/, '');
+      let username = input.value.trim();
+      
+      // Instagram URL'si girildiyse kullanıcı adını ayıkla
+      if (username.includes('instagram.com/')) {
+        try {
+          const url = new URL(username.startsWith('http') ? username : 'https://' + username);
+          const paths = url.pathname.split('/').filter(p => p.length > 0);
+          if (paths[0] && paths[0] !== 'p' && paths[0] !== 'reels') {
+            username = paths[0];
+          }
+        } catch (e) {}
+      }
+      
+      username = username.replace(/^@/, '').split(/[/?# ]/)[0];
       if (!username) { input.focus(); return; }
 
       const loader = document.getElementById('loader');
@@ -2387,14 +2400,19 @@
           body: JSON.stringify({ username })
         });
         const json = await res.json();
-        const hlArray = Array.isArray(json.data) ? json.data : (json.data?.result || json.data?.items || json.data?.edges || []);
+        const hlArray = Array.isArray(json.data) ? json.data : 
+                        (json.data?.result || json.data?.items || json.data?.edges || 
+                         json.data?.data?.user?.edge_highlight_reels?.edges || 
+                         json.data?.data?.reels_media || 
+                         (json.data?.data?.user ? [json.data.data.user] : []));
 
         if (!json.success) {
+          console.error("Highlights API Error:", json);
           content.innerHTML = `
             <div class="stories-empty">
               <div class="stories-empty-icon">⚠️</div>
               <div class="stories-empty-title">Sunucu Hatası</div>
-              <div class="stories-empty-desc">${json.error || 'Highlights verisi çekilemedi.'}</div>
+              <div class="stories-empty-desc">${json.error || 'Veri çekilemedi. Lütfen tekrar deneyin.'}</div>
             </div>
           `;
           return;
@@ -2412,19 +2430,22 @@
         }
 
         let gridHTML = '<div class="stories-grid">';
-        hlArray.forEach((hl) => {
-          // highlight data mapping (rapidapi genelde {id, title, cover_media: {cropped_image_version: {url}}})
-          const hlId = hl.id || hl.node?.id;
-          const hlTitle = hl.title || hl.node?.title || 'Öne Çıkan';
-          const hlCoverStr = hl.cover_media?.cropped_image_version?.url || hl.node?.cover_media?.cropped_image_version?.url || hl.cover_url || '';
-          const thumbSrc = `/api/proxy?src=${encodeURIComponent(hlCoverStr)}`;
+        hlArray.forEach((item) => {
+          const hl = item.node || item;
+          const hlId = hl.id || hl.pk;
+          const hlTitle = hl.title || 'Öne Çıkan';
+          const hlCoverStr = hl.cover_media?.cropped_image_version?.url || 
+                             hl.cover_media?.thumbnail_src || 
+                             hl.cover_url || '';
+          const thumbSrc = hlCoverStr ? `/api/proxy?src=${encodeURIComponent(hlCoverStr)}` : '';
 
-          if(hlId && hlCoverStr) {
+          if(hlId) {
+            const escapedTitle = hlTitle.replace(/'/g, "\\'");
             gridHTML += `
-              <div class="story-thumb" onclick="openHighlightViewer('${hlId}', '${hlTitle.replace(/'/g, "'")}')" title="${hlTitle}">
+              <div class="story-thumb" onclick="openHighlightViewer('${hlId}', '${escapedTitle}')" title="${hlTitle}">
                 <div class="story-thumb-ring-wrap" style="padding: 1px;">
                   <div class="story-thumb-ring" style="background:#555; padding:2px;">
-                    <img class="story-thumb-img" src="${thumbSrc}" alt="${hlTitle}" loading="lazy"/>
+                    <img class="story-thumb-img" src="${thumbSrc || 'https://via.placeholder.com/150'}" alt="${hlTitle}" loading="lazy"/>
                   </div>
                 </div>
                 <span class="story-thumb-label" style="text-transform: none;">${hlTitle}</span>
@@ -2472,15 +2493,37 @@
 
         // json.data formatı RapidAPI instagram120 yapısına göre ayarlanır
         const resData = json.data || {};
-        const items = Array.isArray(resData) ? resData : (resData.result || resData.items || []);
+        let items = [];
+        
+        console.log("Highlight Stories Raw Data:", resData);
+
+        if (Array.isArray(resData)) {
+            items = resData;
+        } else if (resData.reels_media && Array.isArray(resData.reels_media)) {
+            items = resData.reels_media.flatMap(r => r.items || [r]);
+        } else if (resData.reels && Array.isArray(resData.reels)) {
+            items = resData.reels.flatMap(r => r.items || [r]);
+        } else if (resData.data?.reels && Array.isArray(resData.data.reels)) {
+            items = resData.data.reels.flatMap(r => r.items || [r]);
+        } else if (resData.items && Array.isArray(resData.items)) {
+            items = resData.items;
+        } else if (resData.result && Array.isArray(resData.result)) {
+            items = resData.result;
+        } else if (resData.data?.items && Array.isArray(resData.data.items)) {
+            items = resData.data.items;
+        }
         
         if (items.length === 0) {
           showToast('Bu öne çıkanda hikaye bulunamadı.');
+          loader.classList.remove('active');
           return;
         }
 
         // storiesData global nesnesini bu highlight ile güncelle
-        storiesData = items.map((story, idx) => {
+        storiesData = items.map((item, idx) => {
+          const story = item.node || item;
+          if (!story) return null;
+
           const isVideo = story.media_type === 2 || story.media_type === 'video' || !!story.video_versions;
           
           let rawUrl = '';
@@ -2488,21 +2531,26 @@
               const v = story.video_versions || [];
               rawUrl = (v[0]?.url || v[0]) || story.video_url || '';
           } else {
-              const c = story.image_versions2?.candidates || [];
+              const c = (story.image_versions2?.candidates) || story.image_versions || [];
               rawUrl = (c[0]?.url || c[0]) || story.image_url || '';
           }
 
           if (!rawUrl) rawUrl = story.display_url || story.url || '';
+          if (!rawUrl) return null;
+
+          const c = (story.image_versions2?.candidates) || story.image_versions || [];
+          const thumbUrl = c[c.length - 1]?.url || story.thumbnail_url || rawUrl;
 
           return {
               id: story.id || story.pk || `hl_${idx}`,
               url: `/api/proxy?src=${encodeURIComponent(rawUrl)}&type=${isVideo ? 'video' : 'image'}`,
               original_url: rawUrl,
+              thumbnail_url: `/api/proxy?src=${encodeURIComponent(thumbUrl)}&type=image`,
               taken_at: story.taken_at || Math.floor(Date.now() / 1000),
               media_type: isVideo ? 'video' : 'image',
               duration: story.video_duration || 15
           };
-        }).filter(s => s.original_url);
+        }).filter(Boolean);
 
         if (storiesData.length > 0) {
           cachedUsername = title; // Başlığı isim olarak gösterelim
