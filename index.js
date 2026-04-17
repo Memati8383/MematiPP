@@ -123,83 +123,75 @@ app.get('/api/stories', async (req, res) => {
             timeout: 15000
         });
 
-        // Veri yapısını esnek bir şekilde algıla
+        // Veri yapısını esnek bir şekilde algıla ve TÜM hikayeleri topla
         const rawData = response.data;
-        let stories = [];
+        let storesPool = [];
         
-        // Hiyerarşik yapıları tek tek tara
-        if (rawData.reels && Array.isArray(rawData.reels) && rawData.reels.length > 0) {
-            stories = rawData.reels[0].items || rawData.reels;
-        } else if (rawData.data?.reels && Array.isArray(rawData.data.reels) && rawData.data.reels.length > 0) {
-            stories = rawData.data.reels[0].items || rawData.data.reels;
-        } else if (rawData.data?.reels_media && Array.isArray(rawData.data.reels_media) && rawData.data.reels_media.length > 0) {
-            stories = rawData.data.reels_media[0].items || rawData.data.reels_media;
+        // Tüm hiyerarşik yapıları derinlemesine tarıyoruz (FlatMap kullanarak)
+        if (rawData.reels && Array.isArray(rawData.reels)) {
+            storesPool = rawData.reels.flatMap(r => r.items || [r]);
+        } else if (rawData.data?.reels && Array.isArray(rawData.data.reels)) {
+            storesPool = rawData.data.reels.flatMap(r => r.items || [r]);
+        } else if (rawData.data?.reels_media && Array.isArray(rawData.data.reels_media)) {
+            storesPool = rawData.data.reels_media.flatMap(r => r.items || [r]);
         } else if (rawData.items && Array.isArray(rawData.items)) {
-            stories = rawData.items;
+            storesPool = rawData.items;
+        } else if (rawData.data?.items && Array.isArray(rawData.data.items)) {
+            storesPool = rawData.data.items;
         } else if (Array.isArray(rawData.data)) {
-            stories = rawData.data;
+            storesPool = rawData.data;
         } else if (Array.isArray(rawData.result)) {
-            stories = rawData.result;
+            storesPool = rawData.result;
         } else if (Array.isArray(rawData)) {
-            stories = rawData;
+            storesPool = rawData;
         }
 
-        console.log(`Ham veri seti boyutu: ${stories.length}`);
-        
-        const formattedStories = stories.map((story, index) => {
+        // Eğer hala boşsa ama tek bir reel varsa (dizi değilse)
+        if (storesPool.length === 0 && rawData.reels?.items) {
+            storesPool = rawData.reels.items;
+        }
+
+        const formattedStories = storesPool.map((item, idx) => {
             try {
-                // Video kontrolü
+                const story = Array.isArray(item) ? item[0] : item;
+                if (!story || typeof story !== 'object') return null;
+
                 const isVideo = story.media_type === 2 || 
                               story.media_type === 'video' || 
                               !!story.video_versions || 
                               !!story.video_url;
                 
-                // Medya URL'si belirle
                 let rawUrl = '';
                 if (isVideo) {
-                    const versions = story.video_versions || [];
-                    rawUrl = (versions[0]?.url || versions[0]) || story.video_url || story.url || '';
+                    const v = story.video_versions || [];
+                    rawUrl = (v[0]?.url || v[0]) || story.video_url || story.url || '';
                 } else {
-                    const candidates = (story.image_versions2?.candidates) || story.image_versions || story.candidates || [];
-                    rawUrl = (candidates[0]?.url || candidates[0]) || story.image_url || story.display_url || story.url || '';
-                }
-
-                // Eğer hala URL yoksa, ama story objesi doluysa zorla bulmaya çalış
-                if (!rawUrl) {
-                    const possibleUrls = [story.url, story.download_url, story.thumbnail_url, story.display_url];
-                    rawUrl = possibleUrls.find(u => u && typeof u === 'string') || '';
+                    const c = (story.image_versions2?.candidates) || story.image_versions || story.candidates || [];
+                    rawUrl = (c[0]?.url || c[0]) || story.image_url || story.display_url || story.url || '';
                 }
 
                 if (!rawUrl) {
-                    console.log(`Story ${index} skip edildi: URL bulunamadı.`);
-                    return null;
+                    rawUrl = [story.url, story.download_url, story.thumbnail_url, story.display_url]
+                             .find(u => u && typeof u === 'string' && (u.startsWith('http') || u.includes('cdninstagram'))) || '';
                 }
 
-                const candidates = (story.image_versions2?.candidates) || story.image_versions || story.candidates || [];
-                const thumbUrl = candidates[candidates.length - 1]?.url || 
-                               story.thumbnail_url || 
-                               story.display_url || 
-                               rawUrl;
+                if (!rawUrl) return null;
+
+                const c = (story.image_versions2?.candidates) || story.image_versions || story.candidates || [];
+                const thumbUrl = c[c.length - 1]?.url || story.thumbnail_url || story.display_url || rawUrl;
 
                 return {
-                    id: story.id || story.pk || `story_${index}_${Date.now()}`,
+                    id: story.id || story.pk || `s_${idx}_${Date.now()}`,
                     url: `/api/proxy?src=${encodeURIComponent(rawUrl)}&type=${isVideo ? 'video' : 'image'}`,
                     original_url: rawUrl,
                     thumbnail_url: `/api/proxy?src=${encodeURIComponent(thumbUrl)}&type=image`,
                     taken_at: story.taken_at || story.created_at || Math.floor(Date.now() / 1000),
                     media_type: isVideo ? 'video' : 'image',
                     duration: story.video_duration || 15,
-                    mentions: (story.reel_mentions || story.mentions || []).map(m => {
-                        if (typeof m === 'string') return m;
-                        return m.user?.username || m.username || '';
-                    }).filter(Boolean),
-                    hashtags: (story.story_hashtags || story.hashtags || []).map(h => {
-                        if (typeof h === 'string') return h;
-                        return h.hashtag?.name || h.name || '';
-                    }).filter(Boolean)
+                    mentions: (story.reel_mentions || story.mentions || []).map(m => m.user?.username || m.username || m).filter(Boolean),
+                    hashtags: (story.story_hashtags || story.hashtags || []).map(h => h.hashtag?.name || h.name || h).filter(Boolean)
                 };
             } catch (err) {
-                console.error(`Story ${index} mapping hatası:`, err);
                 return null;
             }
         }).filter(Boolean);

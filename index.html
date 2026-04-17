@@ -1084,28 +1084,28 @@
       position: absolute;
       top: 50%;
       transform: translateY(-50%);
-      width: 44px;
-      height: 44px;
+      width: 48px; height: 48px;
       border-radius: 50%;
       background: rgba(255,255,255,0.1);
-      backdrop-filter: blur(10px);
+      backdrop-filter: blur(12px);
       border: 1px solid rgba(255,255,255,0.15);
       color: white;
       display: flex;
       align-items: center;
       justify-content: center;
       cursor: pointer;
-      z-index: 20;
-      transition: all var(--transition);
-      opacity: 0.6;
+      z-index: 40;
+      transition: all 0.2s ease;
+      opacity: 0.8;
     }
     .story-nav-btn:hover {
       opacity: 1;
-      background: rgba(255,255,255,0.2);
+      background: rgba(255,255,255,0.25);
+      transform: translateY(-50%) scale(1.1);
     }
-    .story-nav-btn svg { width: 24px; height: 24px; }
-    .story-nav-btn.story-nav-prev { left: -60px; }
-    .story-nav-btn.story-nav-next { right: -60px; }
+    .story-nav-btn svg { width: 26px; height: 26px; }
+    .story-nav-btn.story-nav-prev { left: -75px; }
+    .story-nav-btn.story-nav-next { right: -75px; }
 
     /* Click Zones (Alternative for mobile/precise clicking) */
     .story-click-zone {
@@ -1637,6 +1637,7 @@
 
   <!-- ═══════ STORY VIEWER MODAL ═══════ -->
   <div id="storyViewer" class="story-viewer-overlay" onclick="if(event.target===this)closeStoryViewer()">
+    <div id="storyViewerBg" class="story-viewer-bg"></div>
     <div class="story-viewer">
       <!-- Progress Bars -->
       <div id="storyProgressContainer" class="story-progress-container"></div>
@@ -2124,6 +2125,10 @@
       clearTimeout(storyTimer);
       currentStoryIndex = index;
       const story = storiesData[index];
+
+      // Arka planı güncelle
+      const bg = document.getElementById('storyViewerBg');
+      if (bg) bg.style.backgroundImage = `url(${story.thumbnail_url || story.url})`;
 
       // Progress bar güncelle
       const bars = document.querySelectorAll('.story-progress-bar');
