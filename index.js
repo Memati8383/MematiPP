@@ -5,8 +5,15 @@ const app = express();
 // ── Proxy API ──
 app.get('/api/proxy', (req, res) => {
     const src = req.query.src;
+    const type = req.query.type || 'image';
     if (!src) return res.status(400).json({ error: 'Kaynak eksik' });
-    res.redirect(`https://wsrv.nl/?url=${encodeURIComponent(src)}`);
+
+    // Videolar için wsrv.nl bazen sorun çıkarıyor, direkt yönlendirme yapalım
+    if (type === 'video') {
+        res.redirect(src);
+    } else {
+        res.redirect(`https://wsrv.nl/?url=${encodeURIComponent(src)}`);
+    }
 });
 
 // ── Search API ──
@@ -120,18 +127,24 @@ app.get('/api/stories', async (req, res) => {
         const rawData = response.data;
         let stories = [];
         
-        if (Array.isArray(rawData)) {
-            stories = rawData;
+        // Bazı API'lar hikayeleri "reels" dizisi içindeki "items" kısmında döner
+        if (rawData.reels && Array.isArray(rawData.reels) && rawData.reels.length > 0) {
+            if (Array.isArray(rawData.reels[0].items)) {
+                stories = rawData.reels[0].items;
+            } else {
+                stories = rawData.reels;
+            }
         } else if (rawData.data && Array.isArray(rawData.data)) {
+            // Eğer data bir dizi ise direkt hikayeler olabilir
             stories = rawData.data;
-        } else if (rawData.reels && Array.isArray(rawData.reels)) {
-            stories = rawData.reels;
+        } else if (rawData.data?.reels && Array.isArray(rawData.data.reels) && rawData.data.reels.length > 0) {
+            stories = rawData.data.reels[0].items || rawData.data.reels;
+        } else if (Array.isArray(rawData)) {
+            stories = rawData;
         } else if (rawData.result && Array.isArray(rawData.result)) {
             stories = rawData.result;
         } else if (rawData.items && Array.isArray(rawData.items)) {
             stories = rawData.items;
-        } else if (rawData.stories && Array.isArray(rawData.stories)) {
-            stories = rawData.stories;
         }
 
         console.log(`Tespit edilen hikaye sayısı: ${stories.length}`);
@@ -145,20 +158,20 @@ app.get('/api/stories', async (req, res) => {
                               !!story.video_versions || 
                               !!story.video_url;
                 
-                // Medya URL'sini belirle (En yüksek kaliteyi bulmaya çalış)
+                // Medya URL'sini belirle
                 let rawUrl = '';
                 if (isVideo) {
                     const versions = story.video_versions || [];
-                    rawUrl = (versions[0]?.url || versions[0]) || story.video_url || '';
+                    rawUrl = (versions[0]?.url || versions[0]) || story.video_url || story.url || '';
                 } else {
-                    const candidates = story.image_versions2?.candidates || [];
-                    rawUrl = (candidates[0]?.url || candidates[0]) || story.image_url || story.display_url || '';
+                    const candidates = (story.image_versions2?.candidates) || story.image_versions || [];
+                    rawUrl = (candidates[0]?.url || candidates[0]) || story.image_url || story.display_url || story.url || '';
                 }
 
-                if (!rawUrl) rawUrl = story.url || story.download_url || '';
+                if (!rawUrl) return null;
 
                 // Thumbnail belirle
-                const candidates = story.image_versions2?.candidates || [];
+                const candidates = (story.image_versions2?.candidates) || story.image_versions || [];
                 const thumbUrl = candidates[candidates.length - 1]?.url || 
                                story.thumbnail_url || 
                                story.display_url || 
@@ -166,9 +179,11 @@ app.get('/api/stories', async (req, res) => {
 
                 return {
                     id: story.id || story.pk || Math.random().toString(36).substr(2, 9),
-                    url: `/api/proxy?src=${encodeURIComponent(rawUrl)}`,
+                    // Videolarda wsrv.nl bazen sorun çıkarabiliyor, resimler için mükemmel.
+                    // Videoyu proxy üzerinden geçirmek yerine direkt URL (veya daha esnek bir proxy) deneyebiliriz.
+                    url: `/api/proxy?src=${encodeURIComponent(rawUrl)}&type=${isVideo ? 'video' : 'image'}`,
                     original_url: rawUrl,
-                    thumbnail_url: `/api/proxy?src=${encodeURIComponent(thumbUrl)}`,
+                    thumbnail_url: `/api/proxy?src=${encodeURIComponent(thumbUrl)}&type=image`,
                     taken_at: story.taken_at || story.created_at || Math.floor(Date.now() / 1000),
                     media_type: isVideo ? 'video' : 'image',
                     duration: story.video_duration || 15,
@@ -198,12 +213,12 @@ app.get('/api/stories', async (req, res) => {
             console.error('Hata Yanıtı:', JSON.stringify(e.response.data));
         }
         
-        // Eğer 404 ise muhtemelen hikaye yok veya kullanıcı bulunamadı
         if (e.response?.status === 404) {
             return res.json({ success: true, data: [] });
         }
         res.status(500).json({ success: false, error: 'Instagram hikayelerine şu an erişilemiyor.' });
     }
 });
+
 
 module.exports = app;
