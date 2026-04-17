@@ -17,33 +17,34 @@
     ═══════════════════════════════════════════════════════ */
     :root {
       /* Colors & Backgrounds */
-      --bg-gradient: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-      --bg-glass: rgba(255, 255, 255, 0.1);
-      --bg-glass-hover: rgba(255, 255, 255, 0.15);
-      --bg-input: rgba(255, 255, 255, 0.08);
+      --bg-gradient: linear-gradient(135deg, #1a1c2c 0%, #4a1942 100%); /* Mor-Siyah arası daha derin */
+      --bg-gradient: linear-gradient(135deg, #0f172a 0%, #1e1b4b 100%); /* Derin Lacivert/Indigo */
+      --bg-glass: rgba(255, 255, 255, 0.05);
+      --bg-glass-hover: rgba(255, 255, 255, 0.1);
+      --bg-input: rgba(255, 255, 255, 0.05);
       
       /* Borders & Effects */
-      --border-glass: 1px solid rgba(255, 255, 255, 0.2);
-      --border-glass-focus: 1px solid rgba(255, 255, 255, 0.4);
-      --glass-blur: blur(15px);
+      --border-glass: 1px solid rgba(255, 255, 255, 0.12);
+      --border-glass-focus: 1px solid rgba(255, 255, 255, 0.25);
+      --glass-blur: blur(20px);
       
       /* Typography */
       --text-primary: #ffffff;
-      --text-secondary: #e0e0e0;
-      --text-muted: #b0b0b0;
+      --text-secondary: #94a3b8;
+      --text-muted: #64748b;
       
-      /* Accents */
-      --accent-violet: #8b5cf6;
-      --accent-violet-light: #a78bfa;
-      --accent-pink: #ec4899;
+      /* Accents (Cool Tones) */
+      --accent-violet: #818cf8;
+      --accent-violet-light: #a5b4fc;
+      --accent-pink: #38bdf8; /* Pembe yerine gök mavisi */
       --accent-blue: #3b82f6;
       --accent-emerald: #10b981;
       
       /* Gradients & Shadows */
-      --gradient-main: linear-gradient(135deg, #a78bfa 0%, #f472b6 100%);
-      --shadow-glass: 0 8px 32px 0 rgba(31, 38, 135, 0.15);
-      --shadow-premium: 0 24px 60px rgba(0, 0, 0, 0.2);
-      --shadow-soft: 0 4px 20px rgba(0, 0, 0, 0.1);
+      --gradient-main: linear-gradient(135deg, #6366f1 0%, #a855f7 100%); /* Indigo -> Violet */
+      --shadow-glass: 0 8px 32px 0 rgba(0, 0, 0, 0.3);
+      --shadow-premium: 0 24px 60px rgba(0, 0, 0, 0.4);
+      --shadow-soft: 0 4px 20px rgba(0, 0, 0, 0.2);
       
       /* Layout & Spacing */
       --radius-sm: 12px;
@@ -92,9 +93,9 @@
     /* ── Ortam Arka Planı ── */
     .ambient-bg {
       position: fixed; inset: 0; z-index: -1; pointer-events: none;
-      background: radial-gradient(circle at 20% 20%, rgba(139, 92, 246, 0.15) 0%, transparent 40%),
-                  radial-gradient(circle at 80% 80%, rgba(236, 72, 153, 0.1) 0%, transparent 40%);
-      transition: background 0.5s ease;
+      background: radial-gradient(circle at 20% 20%, rgba(99, 102, 241, 0.1) 0%, transparent 40%),
+                  radial-gradient(circle at 80% 80%, rgba(59, 130, 246, 0.08) 0%, transparent 40%);
+      transition: background 0.8s ease;
     }
 
     /* ── Gezinme Çubuğu ── */
@@ -685,14 +686,14 @@
     .posts-header-icon {
       width: 28px; height: 28px;
       border-radius: var(--radius-sm);
-      background: rgba(236,72,153,0.15);
+      background: rgba(99,102,241,0.15);
       display: flex;
       align-items: center;
       justify-content: center;
     }
     .posts-header-icon svg {
       width: 16px; height: 16px;
-      color: var(--accent-pink);
+      color: var(--accent-violet);
     }
     .posts-header-title {
       font-size: 13px;
