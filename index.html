@@ -2317,12 +2317,14 @@
       if (story.media_type === 'video') {
         const duration = (story.duration || 15) * 1000;
         const activeBar = document.querySelector('.story-progress-bar.active');
-        if (activeBar) activeBar.style.setProperty('--story-duration', (duration / 1000) + 's');
+        if (activeBar) {
+          activeBar.style.setProperty('--story-duration', (duration / 1000) + 's');
+          activeBar.classList.add('paused'); // Yüklenene kadar duraklat
+        }
 
         mediaContainer.innerHTML = `
           <video
             src="${story.url}"
-            autoplay
             playsinline
             muted
             style="width:100%;height:100%;object-fit:cover;"
@@ -2330,31 +2332,40 @@
         `;
 
         const videoEl = mediaContainer.querySelector('video');
-        videoEl.addEventListener('canplay', () => {
+        
+        const startVideo = () => {
           mediaContainer.classList.remove('loading');
           mediaContainer.classList.add('loaded');
+          videoEl.play().catch(e => console.log("Autoplay blocked:", e));
           videoEl.muted = false;
-        });
-        videoEl.addEventListener('ended', () => {
-          nextStory();
-        });
+          if (activeBar) activeBar.classList.remove('paused');
+          // Timer'ı video hazır olduğunda başlat
+          storyTimer = setTimeout(nextStory, duration + 1000);
+        };
 
-        storyTimer = setTimeout(nextStory, duration + 1000);
+        videoEl.addEventListener('canplay', startVideo, { once: true });
+        videoEl.addEventListener('ended', () => nextStory());
       } else {
         const activeBar = document.querySelector('.story-progress-bar.active');
-        if (activeBar) activeBar.style.setProperty('--story-duration', '5s');
+        if (activeBar) {
+          activeBar.style.setProperty('--story-duration', '5s');
+          activeBar.classList.add('paused');
+        }
 
         mediaContainer.innerHTML = `<img src="${story.url}" alt="Story" style="width:100%;height:100%;object-fit:cover;"/>`;
         const imgEl = mediaContainer.querySelector('img');
+        
         imgEl.onload = () => {
           mediaContainer.classList.remove('loading');
           mediaContainer.classList.add('loaded');
+          if (activeBar) activeBar.classList.remove('paused');
+          // Timer'ı resim yüklendiğinde başlat
+          storyTimer = setTimeout(nextStory, 5000);
         };
         imgEl.onerror = () => {
           mediaContainer.classList.remove('loading');
           nextStory();
         };
-        storyTimer = setTimeout(nextStory, 5000);
       }
     }
 
