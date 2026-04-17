@@ -2389,7 +2389,9 @@
         });
         const json = await res.json();
 
-        if (!json.success || !json.data || json.data.length === 0) {
+        const hlArray = Array.isArray(json.data) ? json.data : (json.data?.result || json.data?.items || []);
+
+        if (!json.success || hlArray.length === 0) {
           content.innerHTML = `
             <div class="stories-empty">
               <div class="stories-empty-icon">⭐</div>
@@ -2401,7 +2403,7 @@
         }
 
         let gridHTML = '<div class="stories-grid">';
-        json.data.forEach((hl) => {
+        hlArray.forEach((hl) => {
           // highlight data mapping (rapidapi genelde {id, title, cover_media: {cropped_image_version: {url}}})
           const hlId = hl.id || hl.node?.id;
           const hlTitle = hl.title || hl.node?.title || 'Öne Çıkan';
@@ -2525,15 +2527,21 @@
         grid.innerHTML = '';
         
         let reelsArray = [];
-        if (json.data && Array.isArray(json.data.items)) {
-          reelsArray = json.data.items;
-        } else if (Array.isArray(json.data)) {
-          reelsArray = json.data;
+        const resData = json.data || {};
+        
+        if (Array.isArray(resData)) {
+          reelsArray = resData;
+        } else if (Array.isArray(resData.items)) {
+          reelsArray = resData.items;
+        } else if (resData.result && Array.isArray(resData.result)) {
+          reelsArray = resData.result;
+        } else if (resData.result && resData.result.edges && Array.isArray(resData.result.edges)) {
+          reelsArray = resData.result.edges;
         }
 
         if (reelsArray.length > 0) {
           reelsArray.forEach(item => {
-            const media = item.media || item;
+            const media = item.node?.media || item.media || item;
             const shortcode = media.code || media.shortcode;
             if(!shortcode) return;
 
