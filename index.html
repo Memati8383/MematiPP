@@ -17,15 +17,14 @@
     ═══════════════════════════════════════════════════════ */
     :root {
       /* Colors & Backgrounds */
-      --bg-gradient: linear-gradient(135deg, #1a1c2c 0%, #4a1942 100%); /* Mor-Siyah arası daha derin */
-      --bg-gradient: linear-gradient(135deg, #0f172a 0%, #1e1b4b 100%); /* Derin Lacivert/Indigo */
-      --bg-glass: rgba(255, 255, 255, 0.05);
-      --bg-glass-hover: rgba(255, 255, 255, 0.1);
-      --bg-input: rgba(255, 255, 255, 0.05);
+      --bg-gradient: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
+      --bg-glass: rgba(255, 255, 255, 0.03);
+      --bg-glass-hover: rgba(255, 255, 255, 0.06);
+      --bg-input: rgba(255, 255, 255, 0.04);
       
       /* Borders & Effects */
-      --border-glass: 1px solid rgba(255, 255, 255, 0.12);
-      --border-glass-focus: 1px solid rgba(255, 255, 255, 0.25);
+      --border-glass: 1px solid rgba(255, 255, 255, 0.1);
+      --border-glass-focus: 1px solid rgba(255, 255, 255, 0.2);
       --glass-blur: blur(20px);
       
       /* Typography */
@@ -33,15 +32,15 @@
       --text-secondary: #94a3b8;
       --text-muted: #64748b;
       
-      /* Accents (Cool Tones) */
-      --accent-violet: #818cf8;
-      --accent-violet-light: #a5b4fc;
-      --accent-pink: #38bdf8; /* Pembe yerine gök mavisi */
+      /* Accents */
       --accent-blue: #3b82f6;
+      --accent-indigo: #6366f1;
+      --accent-violet: #8b5cf6;
+      --accent-violet-light: #a78bfa;
       --accent-emerald: #10b981;
       
       /* Gradients & Shadows */
-      --gradient-main: linear-gradient(135deg, #6366f1 0%, #a855f7 100%); /* Indigo -> Violet */
+      --gradient-main: linear-gradient(135deg, #3b82f6 0%, #6366f1 100%);
       --shadow-glass: 0 8px 32px 0 rgba(0, 0, 0, 0.3);
       --shadow-premium: 0 24px 60px rgba(0, 0, 0, 0.4);
       --shadow-soft: 0 4px 20px rgba(0, 0, 0, 0.2);
@@ -53,12 +52,12 @@
       --radius-xl: 32px;
       --radius-2xl: 40px;
       --radius-full: 9999px;
-      --padding-container: 40px;
+      --padding-container: 48px;
       
       /* Interaction */
       --transition: 0.4s cubic-bezier(0.16, 1, 0.3, 1);
-      --navbar-bg: rgba(255, 255, 255, 0.05);
-      --navbar-border: rgba(255, 255, 255, 0.1);
+      --navbar-bg: rgba(15, 23, 42, 0.6);
+      --navbar-border: rgba(255, 255, 255, 0.08);
     }
 
     /* ── Light Mode Glass ── */
@@ -93,9 +92,9 @@
     /* ── Ortam Arka Planı ── */
     .ambient-bg {
       position: fixed; inset: 0; z-index: -1; pointer-events: none;
-      background: radial-gradient(circle at 20% 20%, rgba(99, 102, 241, 0.1) 0%, transparent 40%),
-                  radial-gradient(circle at 80% 80%, rgba(59, 130, 246, 0.08) 0%, transparent 40%);
-      transition: background 0.8s ease;
+      background: radial-gradient(circle at 10% 10%, rgba(59, 130, 246, 0.1) 0%, transparent 40%),
+                  radial-gradient(circle at 90% 90%, rgba(99, 102, 241, 0.08) 0%, transparent 40%);
+      transition: background 0.5s ease;
     }
 
     /* ── Gezinme Çubuğu ── */
@@ -138,7 +137,7 @@
     .navbar-link svg { width: 18px; height: 18px; }
     .github-btn {
       padding: 8px 18px; border-radius: var(--radius-full);
-      border: var(--border-glass); background: var(--bg-glass);
+      border: var(--border-glass); background: rgba(255, 255, 255, 0.05);
       color: var(--text-primary); font-size: 13px; font-weight: 600;
       backdrop-filter: blur(5px);
       text-decoration: none; transition: all var(--transition);
@@ -244,16 +243,17 @@
 
     .search-btn {
       flex-shrink: 0; border: none; cursor: pointer;
-      background: rgba(255,255,255,0.1);
-      border: 1px solid rgba(255,255,255,0.2);
+      background: var(--accent-blue);
       color: white; font-size: 14px; font-weight: 700;
       padding: 14px 32px; border-radius: var(--radius-lg);
       transition: all var(--transition);
       display: flex; align-items: center; gap: 8px;
+      box-shadow: 0 8px 20px rgba(59, 130, 246, 0.2);
     }
     .search-btn:hover {
-      background: rgba(255,255,255,0.2);
+      background: var(--accent-indigo);
       transform: scale(1.02);
+      box-shadow: 0 8px 25px rgba(99, 102, 241, 0.3);
     }
     .search-btn:active { transform: scale(0.97); }
     .search-btn svg { width: 20px; height: 20px; }
@@ -432,12 +432,13 @@
       cursor: pointer; text-decoration: none;
     }
     .btn-primary {
-      background: rgba(255, 255, 255, 0.15); color: #ffffff;
+      background: var(--accent-blue); color: #ffffff;
+      box-shadow: 0 8px 20px rgba(59, 130, 246, 0.15);
+      border: none;
     }
     .btn-primary:hover {
-      background: rgba(255, 255, 255, 0.25); transform: translateY(-2px);
-      border-color: rgba(255, 255, 255, 0.4);
-      box-shadow: 0 10px 40px rgba(0,0,0,0.2);
+      background: var(--accent-indigo); transform: translateY(-2px);
+      box-shadow: 0 10px 25px rgba(99, 102, 241, 0.2);
     }
     .btn-primary:active { transform: scale(0.97); }
     .btn-secondary {
@@ -686,14 +687,14 @@
     .posts-header-icon {
       width: 28px; height: 28px;
       border-radius: var(--radius-sm);
-      background: rgba(99,102,241,0.15);
+      background: rgba(59, 130, 246, 0.15);
       display: flex;
       align-items: center;
       justify-content: center;
     }
     .posts-header-icon svg {
       width: 16px; height: 16px;
-      color: var(--accent-violet);
+      color: var(--accent-blue);
     }
     .posts-header-title {
       font-size: 13px;
@@ -781,8 +782,8 @@
       width: 64px;
       height: 64px;
       border-radius: 50%;
-      background: linear-gradient(135deg, rgba(245,158,11,0.12) 0%, rgba(236,72,153,0.08) 100%);
-      border: 1px solid rgba(245,158,11,0.15);
+      background: linear-gradient(135deg, rgba(59, 130, 246, 0.12) 0%, rgba(99, 102, 241, 0.08) 100%);
+      border: 1px solid rgba(59, 130, 246, 0.15);
       display: flex;
       align-items: center;
       justify-content: center;
