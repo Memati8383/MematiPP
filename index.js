@@ -127,30 +127,26 @@ app.get('/api/stories', async (req, res) => {
         const rawData = response.data;
         let stories = [];
         
-        // Bazı API'lar hikayeleri "reels" dizisi içindeki "items" kısmında döner
+        // Hiyerarşik yapıları tek tek tara
         if (rawData.reels && Array.isArray(rawData.reels) && rawData.reels.length > 0) {
-            if (Array.isArray(rawData.reels[0].items)) {
-                stories = rawData.reels[0].items;
-            } else {
-                stories = rawData.reels;
-            }
-        } else if (rawData.data && Array.isArray(rawData.data)) {
-            // Eğer data bir dizi ise direkt hikayeler olabilir
-            stories = rawData.data;
+            stories = rawData.reels[0].items || rawData.reels;
         } else if (rawData.data?.reels && Array.isArray(rawData.data.reels) && rawData.data.reels.length > 0) {
             stories = rawData.data.reels[0].items || rawData.data.reels;
-        } else if (Array.isArray(rawData)) {
-            stories = rawData;
-        } else if (rawData.result && Array.isArray(rawData.result)) {
-            stories = rawData.result;
+        } else if (rawData.data?.reels_media && Array.isArray(rawData.data.reels_media) && rawData.data.reels_media.length > 0) {
+            stories = rawData.data.reels_media[0].items || rawData.data.reels_media;
         } else if (rawData.items && Array.isArray(rawData.items)) {
             stories = rawData.items;
+        } else if (Array.isArray(rawData.data)) {
+            stories = rawData.data;
+        } else if (Array.isArray(rawData.result)) {
+            stories = rawData.result;
+        } else if (Array.isArray(rawData)) {
+            stories = rawData;
         }
 
-        console.log(`Tespit edilen hikaye sayısı: ${stories.length}`);
+        console.log(`Ham veri seti boyutu: ${stories.length}`);
         
-        // Veriyi frontend formatına dönüştür
-        const formattedStories = stories.map(story => {
+        const formattedStories = stories.map((story, index) => {
             try {
                 // Video kontrolü
                 const isVideo = story.media_type === 2 || 
@@ -158,29 +154,35 @@ app.get('/api/stories', async (req, res) => {
                               !!story.video_versions || 
                               !!story.video_url;
                 
-                // Medya URL'sini belirle
+                // Medya URL'si belirle
                 let rawUrl = '';
                 if (isVideo) {
                     const versions = story.video_versions || [];
                     rawUrl = (versions[0]?.url || versions[0]) || story.video_url || story.url || '';
                 } else {
-                    const candidates = (story.image_versions2?.candidates) || story.image_versions || [];
+                    const candidates = (story.image_versions2?.candidates) || story.image_versions || story.candidates || [];
                     rawUrl = (candidates[0]?.url || candidates[0]) || story.image_url || story.display_url || story.url || '';
                 }
 
-                if (!rawUrl) return null;
+                // Eğer hala URL yoksa, ama story objesi doluysa zorla bulmaya çalış
+                if (!rawUrl) {
+                    const possibleUrls = [story.url, story.download_url, story.thumbnail_url, story.display_url];
+                    rawUrl = possibleUrls.find(u => u && typeof u === 'string') || '';
+                }
 
-                // Thumbnail belirle
-                const candidates = (story.image_versions2?.candidates) || story.image_versions || [];
+                if (!rawUrl) {
+                    console.log(`Story ${index} skip edildi: URL bulunamadı.`);
+                    return null;
+                }
+
+                const candidates = (story.image_versions2?.candidates) || story.image_versions || story.candidates || [];
                 const thumbUrl = candidates[candidates.length - 1]?.url || 
                                story.thumbnail_url || 
                                story.display_url || 
                                rawUrl;
 
                 return {
-                    id: story.id || story.pk || Math.random().toString(36).substr(2, 9),
-                    // Videolarda wsrv.nl bazen sorun çıkarabiliyor, resimler için mükemmel.
-                    // Videoyu proxy üzerinden geçirmek yerine direkt URL (veya daha esnek bir proxy) deneyebiliriz.
+                    id: story.id || story.pk || `story_${index}_${Date.now()}`,
                     url: `/api/proxy?src=${encodeURIComponent(rawUrl)}&type=${isVideo ? 'video' : 'image'}`,
                     original_url: rawUrl,
                     thumbnail_url: `/api/proxy?src=${encodeURIComponent(thumbUrl)}&type=image`,
@@ -197,10 +199,12 @@ app.get('/api/stories', async (req, res) => {
                     }).filter(Boolean)
                 };
             } catch (err) {
-                console.error('Story mapping hatası:', err);
+                console.error(`Story ${index} mapping hatası:`, err);
                 return null;
             }
         }).filter(Boolean);
+
+        console.log(`Sonuçlanan hikaye sayısı: ${formattedStories.length}`);
 
         res.json({
             success: true,

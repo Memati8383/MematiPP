@@ -1079,23 +1079,51 @@
       object-fit: cover;
     }
 
-    /* Navigation Zones */
-    .story-nav-zone {
+    /* Navigation Arrows */
+    .story-nav-btn {
       position: absolute;
-      top: 60px; bottom: 80px;
-      width: 35%;
+      top: 50%;
+      transform: translateY(-50%);
+      width: 44px;
+      height: 44px;
+      border-radius: 50%;
+      background: rgba(255,255,255,0.1);
+      backdrop-filter: blur(10px);
+      border: 1px solid rgba(255,255,255,0.15);
+      color: white;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      z-index: 20;
+      transition: all var(--transition);
+      opacity: 0.6;
+    }
+    .story-nav-btn:hover {
+      opacity: 1;
+      background: rgba(255,255,255,0.2);
+    }
+    .story-nav-btn svg { width: 24px; height: 24px; }
+    .story-nav-btn.story-nav-prev { left: -60px; }
+    .story-nav-btn.story-nav-next { right: -60px; }
+
+    /* Click Zones (Alternative for mobile/precise clicking) */
+    .story-click-zone {
+      position: absolute;
+      top: 60px; bottom: 100px;
+      width: 30%;
       z-index: 5;
       cursor: pointer;
     }
-    .story-nav-prev { left: 0; }
-    .story-nav-next { right: 0; }
+    .story-click-prev { left: 0; }
+    .story-click-next { right: 0; }
 
     /* Story Footer */
     .story-viewer-footer {
       position: absolute;
       bottom: 0; left: 0; right: 0;
-      padding: 16px 12px 14px;
-      background: linear-gradient(to top, rgba(0,0,0,0.7) 0%, transparent 100%);
+      padding: 20px 16px 30px;
+      background: linear-gradient(to top, rgba(0,0,0,0.8) 0%, transparent 100%);
       display: flex;
       align-items: center;
       justify-content: center;
@@ -1149,7 +1177,9 @@
     }
 
     /* Responsive for story viewer */
-    @media (max-width: 640px) {
+    @media (max-width: 768px) {
+      .story-nav-btn { display: none; } /* Mobile uses click zones */
+      .story-click-zone { width: 45%; }
       .story-viewer {
         max-width: 100%;
         height: 100vh;
@@ -1623,9 +1653,17 @@
         <button class="story-viewer-close" onclick="closeStoryViewer()" title="Kapat">✕</button>
       </div>
 
-      <!-- Navigation Zones -->
-      <div class="story-nav-zone story-nav-prev" onclick="prevStory()"></div>
-      <div class="story-nav-zone story-nav-next" onclick="nextStory()"></div>
+      <!-- Navigation Arrows -->
+      <button class="story-nav-btn story-nav-prev" onclick="prevStory()" title="Önceki">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"/></svg>
+      </button>
+      <button class="story-nav-btn story-nav-next" onclick="nextStory()" title="Sonraki">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
+      </button>
+
+      <!-- Click Zones (Mobile) -->
+      <div class="story-click-zone story-click-prev" onclick="prevStory()"></div>
+      <div class="story-click-zone story-click-next" onclick="nextStory()"></div>
 
       <!-- Media -->
       <div id="storyViewerMedia" class="story-viewer-media"></div>
@@ -1646,6 +1684,7 @@
       </div>
     </div>
   </div>
+
 
   <!-- ═══════ TAM EKRAN GÖRÜNTÜLEYİCİ ═══════ -->
   <div id="modal" class="modal-overlay" onclick="if(event.target===this)closeModal()">
