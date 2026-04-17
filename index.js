@@ -103,28 +103,25 @@ app.get('/api/search', async (req, res) => {
         if (userData) {
             const hdUrl = userData.hd_profile_pic_url_info?.url || userData.profile_pic_url_hd || userData.profile_pic_url;
             
-            // Gönderileri çek (Sadece hesap açık ise)
-            const recentPosts = [];
-            if (!userData.is_private) {
-                const timelineEdges = userData.edge_owner_to_timeline_media?.edges || [];
-                timelineEdges.forEach(edge => {
-                    const node = edge.node;
-                    recentPosts.push({
-                        id: node.id,
-                        shortcode: node.shortcode || '',
-                        display_url: `/api/proxy?src=${encodeURIComponent(node.display_url || node.thumbnail_src || '')}`,
-                        likes: node.edge_liked_by?.count || node.edge_media_preview_like?.count || 0,
-                        comments: node.edge_media_to_comment?.count || 0,
-                        is_video: node.is_video || false,
-                        caption: node.edge_media_to_caption?.edges[0]?.node?.text || '',
-                        timestamp: node.taken_at_timestamp,
-                        location: node.location ? { id: node.location.id, name: node.location.name } : null,
-                        owner: node.owner ? { id: node.owner.id, username: node.owner.username } : null,
-                        dimensions: node.dimensions || null,
-                        accessibility_caption: node.accessibility_caption || null
-                    });
-                });
-            }
+            // Gönderileri çek (Instagram başlangıçta yaklaşık 12-50 arası gönderi döner)
+            const timelineEdges = userData.edge_owner_to_timeline_media?.edges || [];
+            const recentPosts = timelineEdges.map(edge => {
+                const node = edge.node;
+                return {
+                    id: node.id,
+                    shortcode: node.shortcode || '',
+                    display_url: `/api/proxy?src=${encodeURIComponent(node.display_url || node.thumbnail_src || '')}`,
+                    likes: node.edge_liked_by?.count || node.edge_media_preview_like?.count || 0,
+                    comments: node.edge_media_to_comment?.count || 0,
+                    is_video: node.is_video || false,
+                    caption: node.edge_media_to_caption?.edges[0]?.node?.text || '',
+                    timestamp: node.taken_at_timestamp,
+                    location: node.location ? { id: node.location.id, name: node.location.name } : null,
+                    owner: node.owner ? { id: node.owner.id, username: node.owner.username } : null,
+                    dimensions: node.dimensions || null,
+                    accessibility_caption: node.accessibility_caption || null
+                };
+            });
 
             res.json({
                 success: true,
@@ -151,9 +148,7 @@ app.get('/api/search', async (req, res) => {
                     category_name: userData.category_name || null,
                     business_category_name: userData.business_category_name || null,
                     overall_category_name: userData.overall_category_name || null,
-                    recent_posts: recentPosts,
-                    next_max_id: userData.edge_owner_to_timeline_media?.page_info?.end_cursor || null,
-                    has_next_page: userData.edge_owner_to_timeline_media?.page_info?.has_next_page || false
+                    recent_posts: recentPosts
                 }
             });
         } else {
