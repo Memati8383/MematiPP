@@ -818,12 +818,14 @@
       display: flex;
       flex-wrap: nowrap;
       overflow-x: auto;
-      gap: 20px;
-      padding: 10px 4px 15px;
+      gap: 18px;
+      padding: 16px 4px 20px;
       scroll-snap-type: x mandatory;
-      scrollbar-width: none; /* Hide scrollbar Firefox */
+      scrollbar-width: none;
+      -ms-overflow-style: none;
+      -webkit-overflow-scrolling: touch;
     }
-    .stories-grid::-webkit-scrollbar { display: none; } /* Hide scrollbar Chrome/Safari */
+    .stories-grid::-webkit-scrollbar { display: none; }
     
     .story-thumb {
       flex: 0 0 auto;
@@ -831,41 +833,22 @@
       display: flex;
       flex-direction: column;
       align-items: center;
-      gap: 8px;
+      gap: 10px;
+      cursor: pointer;
+      transition: transform 0.2s ease;
     }
+    .story-thumb:hover { transform: translateY(-4px); }
+
     .stories-count-badge {
       font-size: 11px;
       font-weight: 700;
-      padding: 3px 10px;
+      padding: 3px 12px;
       border-radius: var(--radius-full);
-      background: linear-gradient(135deg, rgba(245,158,11,0.12), rgba(236,72,153,0.12));
+      background: linear-gradient(135deg, rgba(245,158,11,0.15), rgba(236,72,153,0.15));
       border: 1px solid rgba(245,158,11,0.2);
       color: #f59e0b;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.1);
     }
-
-    /* Story Thumbnail Grid */
-    .stories-grid {
-      display: flex;
-      gap: 16px;
-      padding: 20px 24px;
-      overflow-x: auto;
-      scroll-snap-type: x mandatory;
-      scrollbar-width: none;
-      -ms-overflow-style: none;
-    }
-    .stories-grid::-webkit-scrollbar { display: none; }
-
-    .story-thumb {
-      flex-shrink: 0;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      gap: 8px;
-      cursor: pointer;
-      scroll-snap-align: start;
-      transition: transform var(--transition);
-    }
-    .story-thumb:hover { transform: translateY(-2px); }
 
     .story-thumb-ring {
       width: 72px; height: 72px;
