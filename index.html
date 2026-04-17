@@ -2659,8 +2659,27 @@
 
     // Seçilen Highlight Hikayelerini Yükle
     async function openHighlightViewer(highlightId, title) {
+      // Hikaye görüntüleyiciyi "Yükleniyor" modunda hemen açalım
+      const overlay = document.getElementById('storyViewer');
+      overlay.classList.add('active');
+      document.body.style.overflow = 'hidden';
+      
+      // Bilgileri ayarla
+      document.getElementById('storyViewerAvatar').src = cachedAvatar;
+      document.getElementById('storyViewerUsername').textContent = title;
+      document.getElementById('storyViewerTime').textContent = 'Hazırlanıyor...';
+      
+      // Loading içeriği
+      document.getElementById('storyViewerMedia').innerHTML = `
+        <div style="display:flex; flex-direction:column; align-items:center; justify-content:center; height:100%; color:#fff; gap:15px;">
+           <div class="loader-spinner" style="width:40px; height:40px; border-width:3px;"></div>
+           <span style="font-size:14px; font-weight:500; opacity:0.8;">Öne Çıkanlar Yükleniyor...</span>
+        </div>
+      `;
+      document.getElementById('storyProgressContainer').innerHTML = '';
+      
       const loader = document.getElementById('loader');
-      loader.classList.add('active'); // Sayfada kısa loader gösterelim
+      loader.classList.add('active'); 
       
       try {
         const res = await fetch('/api/instagram/highlightStories', {
@@ -2673,6 +2692,7 @@
         loader.classList.remove('active');
 
         if (!json.success || !json.data) {
+          closeStoryViewer();
           showToast('Öne çıkan hikayeler yüklenemedi.');
           return;
         }
@@ -2706,6 +2726,7 @@
         }
         
         if (items.length === 0) {
+          closeStoryViewer();
           showToast('Bu öne çıkanda hikaye bulunamadı.');
           loader.classList.remove('active');
           return;
@@ -2748,11 +2769,13 @@
           cachedUsername = title; // Başlığı isim olarak gösterelim
           openStoryViewer(0);
         } else {
+          closeStoryViewer();
           showToast('Hikaye formatı okunamadı.');
         }
 
       } catch (err) {
         loader.classList.remove('active');
+        closeStoryViewer();
         showToast('Sunucu bağlantı hatası.');
         console.error(err);
       }
