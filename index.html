@@ -2440,6 +2440,16 @@
 
       // Media göster
       const mediaContainer = document.getElementById('storyViewerMedia');
+      
+      // Önceki videoyu durdur ve temizle (Ses çakışmasını önlemek için)
+      const oldVideo = mediaContainer.querySelector('video');
+      if (oldVideo) {
+        oldVideo.pause();
+        oldVideo.removeAttribute('src');
+        oldVideo.load();
+      }
+      mediaContainer.innerHTML = '';
+      
       mediaContainer.classList.remove('loaded');
       mediaContainer.classList.add('loading');
 
