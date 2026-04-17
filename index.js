@@ -116,41 +116,73 @@ app.get('/api/stories', async (req, res) => {
             timeout: 15000
         });
 
-        const stories = response.data?.data || [];
+        // Veri yapısını esnek bir şekilde algıla
+        const rawData = response.data;
+        let stories = [];
+        
+        if (Array.isArray(rawData)) {
+            stories = rawData;
+        } else if (rawData.data && Array.isArray(rawData.data)) {
+            stories = rawData.data;
+        } else if (rawData.reels && Array.isArray(rawData.reels)) {
+            stories = rawData.reels;
+        } else if (rawData.result && Array.isArray(rawData.result)) {
+            stories = rawData.result;
+        } else if (rawData.items && Array.isArray(rawData.items)) {
+            stories = rawData.items;
+        } else if (rawData.stories && Array.isArray(rawData.stories)) {
+            stories = rawData.stories;
+        }
+
+        console.log(`Tespit edilen hikaye sayısı: ${stories.length}`);
         
         // Veriyi frontend formatına dönüştür
         const formattedStories = stories.map(story => {
             try {
-                const isVideo = story.media_type === 2 || !!story.video_versions;
+                // Video kontrolü
+                const isVideo = story.media_type === 2 || 
+                              story.media_type === 'video' || 
+                              !!story.video_versions || 
+                              !!story.video_url;
                 
-                // Medya URL'sini belirle
+                // Medya URL'sini belirle (En yüksek kaliteyi bulmaya çalış)
                 let rawUrl = '';
                 if (isVideo) {
                     const versions = story.video_versions || [];
-                    rawUrl = versions[0]?.url || versions[0] || '';
+                    rawUrl = (versions[0]?.url || versions[0]) || story.video_url || '';
                 } else {
                     const candidates = story.image_versions2?.candidates || [];
-                    rawUrl = candidates[0]?.url || candidates[0] || '';
+                    rawUrl = (candidates[0]?.url || candidates[0]) || story.image_url || story.display_url || '';
                 }
 
-                if (!rawUrl) rawUrl = story.url || '';
+                if (!rawUrl) rawUrl = story.url || story.download_url || '';
 
+                // Thumbnail belirle
                 const candidates = story.image_versions2?.candidates || [];
-                const thumbUrl = candidates[candidates.length - 1]?.url || story.thumbnail_url || rawUrl;
+                const thumbUrl = candidates[candidates.length - 1]?.url || 
+                               story.thumbnail_url || 
+                               story.display_url || 
+                               rawUrl;
 
                 return {
-                    id: story.id,
+                    id: story.id || story.pk || Math.random().toString(36).substr(2, 9),
                     url: `/api/proxy?src=${encodeURIComponent(rawUrl)}`,
                     original_url: rawUrl,
                     thumbnail_url: `/api/proxy?src=${encodeURIComponent(thumbUrl)}`,
                     taken_at: story.taken_at || story.created_at || Math.floor(Date.now() / 1000),
                     media_type: isVideo ? 'video' : 'image',
                     duration: story.video_duration || 15,
-                    mentions: (story.reel_mentions || []).map(m => (m.user?.username || m.username || '')).filter(Boolean),
-                    hashtags: (story.story_hashtags || []).map(h => (h.hashtag?.name || h.name || '')).filter(Boolean)
+                    mentions: (story.reel_mentions || story.mentions || []).map(m => {
+                        if (typeof m === 'string') return m;
+                        return m.user?.username || m.username || '';
+                    }).filter(Boolean),
+                    hashtags: (story.story_hashtags || story.hashtags || []).map(h => {
+                        if (typeof h === 'string') return h;
+                        return h.hashtag?.name || h.name || '';
+                    }).filter(Boolean)
                 };
             } catch (err) {
-                console.error('Story map error:', err);
+                console.error('Story mapping hatası:', err);
                 return null;
             }
         }).filter(Boolean);
@@ -162,11 +194,15 @@ app.get('/api/stories', async (req, res) => {
 
     } catch (e) {
         console.error('Stories RapidAPI Hatası:', e.message);
+        if (e.response) {
+            console.error('Hata Yanıtı:', JSON.stringify(e.response.data));
+        }
+        
         // Eğer 404 ise muhtemelen hikaye yok veya kullanıcı bulunamadı
         if (e.response?.status === 404) {
             return res.json({ success: true, data: [] });
         }
-        res.status(500).json({ success: false, error: 'Hikayeler şu an alınamıyor.' });
+        res.status(500).json({ success: false, error: 'Instagram hikayelerine şu an erişilemiyor.' });
     }
 });
 
