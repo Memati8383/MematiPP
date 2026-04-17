@@ -2008,15 +2008,14 @@
         });
 
         // HD görsel
+        const profileDlName = d.username + '_profil';
         document.getElementById('resHdImg').src = d.profile_pic_url_hd;
-        document.getElementById('resDownload').href = d.profile_pic_url_hd;
-        document.getElementById('resDownload').download = d.username + '_hd.jpg';
+        document.getElementById('resDownload').href = `/api/download?src=${encodeURIComponent(d.profile_pic_url_hd)}&filename=${profileDlName}`;
         document.getElementById('resOpenTab').href = d.profile_pic_url_hd;
 
         // Tam ekran görüntüleyici
         document.getElementById('modalImg').src = d.profile_pic_url_hd;
-        document.getElementById('modalDownload').href = d.profile_pic_url_hd;
-        document.getElementById('modalDownload').download = d.username + '_hd.jpg';
+        document.getElementById('modalDownload').href = `/api/download?src=${encodeURIComponent(d.profile_pic_url_hd)}&filename=${profileDlName}`;
         document.getElementById('modalOpen').href = d.profile_pic_url_hd;
 
         // Son gönderiler grid
@@ -2292,8 +2291,8 @@
       document.getElementById('storyViewerTime').textContent = getTimeAgo(story.taken_at);
 
       // İndirme/açma butonları
-      document.getElementById('storyDownloadBtn').href = story.url;
-      document.getElementById('storyDownloadBtn').download = `${cachedUsername}_story_${index + 1}.${story.media_type === 'video' ? 'mp4' : 'jpg'}`;
+      const dlName = `${cachedUsername}_story_${index + 1}`;
+      document.getElementById('storyDownloadBtn').href = `/api/download?src=${encodeURIComponent(story.original_url)}&filename=${dlName}`;
       document.getElementById('storyOpenBtn').href = story.url;
 
       // Tags (mentions + hashtags)

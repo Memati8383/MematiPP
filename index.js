@@ -8,11 +8,46 @@ app.get('/api/proxy', (req, res) => {
     const type = req.query.type || 'image';
     if (!src) return res.status(400).json({ error: 'Kaynak eksik' });
 
-    // Videolar için wsrv.nl bazen sorun çıkarıyor, direkt yönlendirme yapalım
     if (type === 'video') {
         res.redirect(src);
     } else {
         res.redirect(`https://wsrv.nl/?url=${encodeURIComponent(src)}`);
+    }
+});
+
+// ── Download API (Forcing download) ──
+app.get('/api/download', async (req, res) => {
+    const src = req.query.src;
+    const filename = req.query.filename || 'instagram_media';
+    if (!src) return res.status(400).send('Kaynak eksik');
+
+    try {
+        const axios = require('axios');
+        const response = await axios({
+            url: src,
+            method: 'GET',
+            responseType: 'stream',
+            timeout: 10000,
+            headers: {
+                'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36'
+            }
+        });
+
+        // Uzantıyı belirle
+        const contentType = response.headers['content-type'];
+        let ext = 'jpg';
+        if (contentType?.includes('video/mp4')) ext = 'mp4';
+        else if (contentType?.includes('image/png')) ext = 'png';
+        
+        const finalFilename = filename.includes('.') ? filename : `${filename}.${ext}`;
+
+        res.setHeader('Content-Disposition', `attachment; filename="${finalFilename}"`);
+        res.setHeader('Content-Type', contentType || 'application/octet-stream');
+        
+        response.data.pipe(res);
+    } catch (e) {
+        console.error('Download hatası:', e.message);
+        res.redirect(src); // Hata durumunda direkt linke yönlendir
     }
 });
 
