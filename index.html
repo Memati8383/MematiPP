@@ -3043,46 +3043,71 @@
         throw new Error('Veri alınamadı');
       }
 
-      // RapidAPI instagram120 yapısı
-      const data = json.data;
-      const media = data.items?.[0] || data.result?.items?.[0] || data.result || data;
+      // Daha esnek medya ayrıştırma
+      const data = json.data || {};
+      let media = null;
       
-      if (!media) throw new Error('Medya nesnesi bulunamadı');
+      // Farklı API yanıt formatlarını dene
+      if (data.items && data.items[0]) media = data.items[0];
+      else if (data.result && data.result.items && data.result.items[0]) media = data.result.items[0];
+      else if (data.result && data.result.id) media = data.result;
+      else if (data.data && data.data.shortcode_media) media = data.data.shortcode_media;
+      else if (data.shortcode_media) media = data.shortcode_media;
+      else media = data;
 
-      const isVideo = media.media_type === 2 || !!media.video_versions;
+      if (!media || (!media.id && !media.shortcode && !media.display_url)) {
+        throw new Error('Medya verisi eksik');
+      }
+
+      const isVideo = media.media_type === 2 || media.is_video === true || !!media.video_versions || !!media.video_url;
       let contentHTML = '';
 
       if (isVideo) {
-        const v = media.video_versions || [];
-        const rawUrl = v[0]?.url || v[0] || media.video_url || '';
-        const proxyUrl = `/api/proxy?src=${encodeURIComponent(rawUrl)}&type=video`;
+        let videoUrl = '';
+        if (media.video_versions && media.video_versions[0]) {
+            videoUrl = media.video_versions[0].url || media.video_versions[0];
+        } else {
+            videoUrl = media.video_url || media.url || '';
+        }
         
+        if (!videoUrl && media.video_dash_manifest) {
+            // Dash manifestten url ayıkla (Basit yöntem)
+            const match = media.video_dash_manifest.match(/<BaseURL>(.*?)<\/BaseURL>/);
+            if(match) videoUrl = match[1];
+        }
+
+        const proxyUrl = `/api/proxy?src=${encodeURIComponent(videoUrl)}&type=video`;
         contentHTML = `
-          <video src="${proxyUrl}" controls autoplay playsinline style="width:100%; height:100%; max-height:600px; object-fit:contain;"></video>
+          <div style="position:relative; width:100%; height:100%; display:flex; align-items:center; justify-content:center; background:#000;">
+            <video src="${proxyUrl}" controls autoplay playsinline style="max-width:100%; max-height:100%;"></video>
+          </div>
         `;
-      } else if (media.carousel_media || (media.image_versions2 && media.carousel_media)) {
-        // İlk resmi göster (Veya tamamını scroll olarak ekle)
-        const items = media.carousel_media;
-        contentHTML = `<div style="display:flex; overflow-x:auto; scroll-snap-type:x mandatory; height:100%;">`;
+      } else if (media.carousel_media || media.edge_sidecar_to_children) {
+        const items = media.carousel_media || media.edge_sidecar_to_children.edges.map(e => e.node);
+        contentHTML = `<div style="display:flex; overflow-x:auto; scroll-snap-type:x mandatory; height:100%; background:#000;">`;
         items.forEach(item => {
-           const isV = item.media_type === 2 || !!item.video_versions;
+           const isV = item.media_type === 2 || item.is_video || !!item.video_versions;
            let u = '';
            if(isV) {
-             u = `/api/proxy?src=${encodeURIComponent(item.video_versions[0].url)}&type=video`;
-             contentHTML += `<video src="${u}" controls style="flex:0 0 100%; scroll-snap-align:center; object-fit:contain;"></video>`;
+             const vUrl = (item.video_versions?.[0]?.url || item.video_versions?.[0] || item.video_url || '');
+             u = `/api/proxy?src=${encodeURIComponent(vUrl)}&type=video`;
+             contentHTML += `<div style="flex:0 0 100%; scroll-snap-align:center; display:flex; align-items:center; justify-content:center;"><video src="${u}" controls style="max-width:100%; max-height:100%;"></video></div>`;
            } else {
-             u = `/api/proxy?src=${encodeURIComponent(item.image_versions2.candidates[0].url)}&type=image`;
-             contentHTML += `<img src="${u}" style="flex:0 0 100%; scroll-snap-align:center; object-fit:contain;"/>`;
+             const imgArr = item.image_versions2?.candidates || item.display_resources || [{url: item.display_url || item.image_url}];
+             u = `/api/proxy?src=${encodeURIComponent(imgArr[0].url || imgArr[0].src)}&type=image`;
+             contentHTML += `<div style="flex:0 0 100%; scroll-snap-align:center; display:flex; align-items:center; justify-content:center;"><img src="${u}" style="max-width:100%; max-height:100%; object-fit:contain;"/></div>`;
            }
         });
         contentHTML += `</div>`;
       } else {
-        const c = (media.image_versions2?.candidates) || media.image_versions || [];
-        const rawUrl = c[0]?.url || c[0] || media.image_url || media.display_url || '';
+        const imgArr = media.image_versions2?.candidates || media.display_resources || [{url: media.display_url || media.image_url || media.url}];
+        const rawUrl = imgArr[0].url || imgArr[0].src || '';
         const proxyUrl = `/api/proxy?src=${encodeURIComponent(rawUrl)}&type=image`;
         
         contentHTML = `
-          <img src="${proxyUrl}" style="width:100%; height:100%; max-height:600px; object-fit:contain;"/>
+          <div style="width:100%; height:100%; background:#000; display:flex; align-items:center; justify-content:center;">
+            <img src="${proxyUrl}" style="max-width:100%; max-height:100%; object-fit:contain;"/>
+          </div>
         `;
       }
 
