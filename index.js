@@ -2,7 +2,13 @@ const express = require('express');
 const axios = require('axios');
 const app = express();
 
+const path = require('path');
 app.use(express.json()); // POST body ayrıştırması için
+
+// Ana sayfayı servis et
+app.get('/', (req, res) => {
+    res.sendFile(path.join(__dirname, 'index.html'));
+});
 
 // ── Proxy API ──
 app.get('/api/proxy', (req, res) => {
