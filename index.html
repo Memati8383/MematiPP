@@ -2195,6 +2195,9 @@
       toast.classList.remove('active');
       result.classList.remove('active');
       document.getElementById('storiesCard').classList.remove('active');
+      document.getElementById('highlightsCard').classList.remove('active');
+      document.getElementById('reelsCard').classList.remove('active');
+      document.getElementById('postsCard').classList.remove('active');
       storiesData = [];
       loader.classList.add('active');
 
@@ -2354,14 +2357,8 @@
           });
           postsCard.classList.add('active');
         } else if (d.is_private) {
-          postsGrid.innerHTML = `
-            <div class="posts-empty">
-              <div class="posts-empty-icon">🔒</div>
-              <div class="posts-empty-title">Bu Hesap Gizli</div>
-              <div class="posts-empty-desc">Gönderileri görüntülemek için bu hesabı Instagram'da takip etmeniz gerekiyor.</div>
-            </div>
-          `;
-          postsCard.classList.add('active');
+          // Gizli hesapta bölmeleri gösterme
+          postsCard.classList.remove('active');
         } else {
           postsCard.classList.remove('active');
         }
@@ -2374,8 +2371,8 @@
           result.scrollIntoView({ behavior: 'smooth', block: 'start' });
         }, 100);
 
-        // ── Stories Yükle ──
-        if (d.id) {
+        // ── Medya İçeriklerini Yükle (Sadece Gizli Olmayan Hesaplar İçin) ──
+        if (d.id && !d.is_private) {
           loadStories(d.id, d.username, d.profile_pic_url_hd);
           loadHighlights(d.username);
           loadReels(d.username);
