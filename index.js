@@ -14,17 +14,19 @@ app.set('trust proxy', 1);
 app.use(helmet({
     contentSecurityPolicy: {
         directives: {
-            ...helmet.contentSecurityPolicy.getDefaultDirectives(),
-            "img-src": ["'self'", "data:", "https://*.cdninstagram.com", "https://*.fbcdn.net", "https://wsrv.nl", "https://*.corsproxy.io"],
-            "video-src": ["'self'", "https://*.cdninstagram.com", "https://*.fbcdn.net"],
-            "frame-src": ["'self'", "https://www.instagram.com"],
-            "connect-src": ["'self'", "https://*.instagram.com", "https://*.rapidapi.com", "https://corsproxy.io", "https://*.corsproxy.io"],
-            "font-src": ["'self'", "https://fonts.gstatic.com"],
-            "style-src": ["'self'", "'unsafe-inline'", "https://fonts.googleapis.com"],
-            "script-src": ["'self'", "'unsafe-inline'", "https://*.rapidapi.com"]
+            defaultSrc: ["'self'"],
+            scriptSrc: ["'self'", "'unsafe-inline'", "https://*.rapidapi.com"],
+            scriptSrcAttr: ["'unsafe-inline'"],
+            styleSrc: ["'self'", "'unsafe-inline'", "https://fonts.googleapis.com"],
+            imgSrc: ["'self'", "data:", "https://*.cdninstagram.com", "https://*.fbcdn.net", "https://wsrv.nl", "https://*.corsproxy.io"],
+            videoSrc: ["'self'", "https://*.cdninstagram.com", "https://*.fbcdn.net"],
+            frameSrc: ["'self'", "https://www.instagram.com"],
+            connectSrc: ["'self'", "https://*.instagram.com", "https://*.rapidapi.com", "https://corsproxy.io", "https://*.corsproxy.io"],
+            fontSrc: ["'self'", "https://fonts.gstatic.com"],
+            upgradeInsecureRequests: [],
         }
     },
-    crossOriginEmbedderPolicy: false // Required for some third-party media
+    crossOriginEmbedderPolicy: false
 }));
 
 // ── Rate Limiting ──
