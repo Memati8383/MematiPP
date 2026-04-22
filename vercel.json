@@ -1,11 +1,35 @@
 {
   "version": 2,
-  "functions": {
-    "index.js": {
-      "maxDuration": 10
+  "builds": [
+    {
+      "src": "index.js",
+      "use": "@vercel/node"
     }
-  },
-  "rewrites": [
-    { "source": "/(.*)", "destination": "/index.js" }
+  ],
+  "routes": [
+    {
+      "src": "/api/proxy(.*)",
+      "dest": "index.js"
+    },
+    {
+      "src": "/api/download(.*)",
+      "dest": "index.js"
+    },
+    {
+      "src": "/api/search(.*)",
+      "dest": "index.js"
+    },
+    {
+      "src": "/api/stories(.*)",
+      "dest": "index.js"
+    },
+    {
+      "src": "/api/instagram/(.*)",
+      "dest": "index.js"
+    },
+    {
+      "src": "/(.*)",
+      "dest": "index.js"
+    }
   ]
 }

@@ -2153,6 +2153,13 @@
       return n.toLocaleString('tr-TR');
     }
 
+    function escapeHTML(str) {
+      if (!str) return '';
+      const div = document.createElement('div');
+      div.textContent = str;
+      return div.innerHTML;
+    }
+
     function showToast(msg) {
       const t = document.getElementById('toast');
       t.textContent = msg;
@@ -2298,10 +2305,10 @@
           a.href = link.url;
           a.target = '_blank';
           a.rel = 'noopener';
-          a.innerHTML = `
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M10 13a5 5 0 007.54.54l3-3a5 5 0 00-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 00-7.54-.54l-3 3a5 5 0 007.07 7.07l1.71-1.71"/></svg>
-            <span class="bio-link-text">${displayTitle}</span>
-          `;
+          const span = document.createElement('span');
+          span.className = 'bio-link-text';
+          span.textContent = displayTitle;
+          a.appendChild(span);
           bioLinksContainer.appendChild(a);
         });
 
@@ -2626,15 +2633,15 @@
           const thumbSrc = hlCoverStr ? `/api/proxy?src=${encodeURIComponent(hlCoverStr)}` : '';
 
           if(hlId) {
-            const escapedTitle = hlTitle.replace(/'/g, "\\'");
+            const escapedTitle = escapeHTML(hlTitle);
             gridHTML += `
-              <div class="story-thumb" onclick="openHighlightViewer('${hlId}', '${escapedTitle}')" title="${hlTitle}">
+              <div class="story-thumb" onclick="openHighlightViewer('${hlId}', '${hlTitle.replace(/'/g, "\\'")}')" title="${escapedTitle}">
                 <div class="story-thumb-ring-wrap" style="padding: 1px;">
                   <div class="story-thumb-ring" style="background:#555; padding:2px;">
-                    <img class="story-thumb-img" src="${thumbSrc || 'https://via.placeholder.com/150'}" alt="${hlTitle}" loading="lazy"/>
+                    <img class="story-thumb-img" src="${thumbSrc || 'https://via.placeholder.com/150'}" alt="${escapedTitle}" loading="lazy"/>
                   </div>
                 </div>
-                <span class="story-thumb-label" style="text-transform: none;">${hlTitle}</span>
+                <span class="story-thumb-label" style="text-transform: none;">${escapedTitle}</span>
               </div>
             `;
           }
@@ -3036,12 +3043,18 @@
       tagsEl.innerHTML = '';
       if (story.mentions && story.mentions.length > 0) {
         story.mentions.forEach(m => {
-          tagsEl.innerHTML += `<span class="story-tag">@${m}</span>`;
+          const span = document.createElement('span');
+          span.className = 'story-tag';
+          span.textContent = `@${m}`;
+          tagsEl.appendChild(span);
         });
       }
       if (story.hashtags && story.hashtags.length > 0) {
         story.hashtags.forEach(h => {
-          tagsEl.innerHTML += `<span class="story-tag">#${h}</span>`;
+          const span = document.createElement('span');
+          span.className = 'story-tag';
+          span.textContent = `#${h}`;
+          tagsEl.appendChild(span);
         });
       }
 
