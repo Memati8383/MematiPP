@@ -15,10 +15,13 @@ app.use(helmet({
     contentSecurityPolicy: {
         directives: {
             ...helmet.contentSecurityPolicy.getDefaultDirectives(),
-            "img-src": ["'self'", "data:", "https://*.cdninstagram.com", "https://*.fbcdn.net", "https://wsrv.nl"],
+            "img-src": ["'self'", "data:", "https://*.cdninstagram.com", "https://*.fbcdn.net", "https://wsrv.nl", "https://*.corsproxy.io"],
             "video-src": ["'self'", "https://*.cdninstagram.com", "https://*.fbcdn.net"],
             "frame-src": ["'self'", "https://www.instagram.com"],
-            "connect-src": ["'self'", "https://*.instagram.com", "https://*.rapidapi.com"]
+            "connect-src": ["'self'", "https://*.instagram.com", "https://*.rapidapi.com", "https://corsproxy.io", "https://*.corsproxy.io"],
+            "font-src": ["'self'", "https://fonts.gstatic.com"],
+            "style-src": ["'self'", "'unsafe-inline'", "https://fonts.googleapis.com"],
+            "script-src": ["'self'", "'unsafe-inline'", "https://*.rapidapi.com"]
         }
     },
     crossOriginEmbedderPolicy: false // Required for some third-party media
