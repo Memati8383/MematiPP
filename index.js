@@ -19,7 +19,7 @@ app.use(helmet({
             scriptSrcAttr: ["'unsafe-inline'"],
             styleSrc: ["'self'", "'unsafe-inline'", "https://fonts.googleapis.com"],
             imgSrc: ["'self'", "data:", "https://*.cdninstagram.com", "https://*.fbcdn.net", "https://wsrv.nl", "https://*.corsproxy.io"],
-            videoSrc: ["'self'", "https://*.cdninstagram.com", "https://*.fbcdn.net"],
+            mediaSrc: ["'self'", "https://*.cdninstagram.com", "https://*.fbcdn.net"],
             frameSrc: ["'self'", "https://www.instagram.com"],
             connectSrc: ["'self'", "https://*.instagram.com", "https://*.rapidapi.com", "https://corsproxy.io", "https://*.corsproxy.io"],
             fontSrc: ["'self'", "https://fonts.gstatic.com"],
