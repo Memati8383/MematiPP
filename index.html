@@ -83,6 +83,31 @@
       --footer-border-gradient: rgba(56, 189, 248, 0.4);
     }
 
+    [data-theme="light"] .stat {
+      background: rgba(255, 255, 255, 0.6);
+      border-color: rgba(0, 0, 0, 0.05);
+    }
+    [data-theme="light"] .stat:hover {
+      background: rgba(255, 255, 255, 0.9);
+      box-shadow: 0 12px 24px rgba(0, 0, 0, 0.05), 0 0 15px rgba(56, 189, 248, 0.2);
+    }
+    [data-theme="light"] .about-item {
+      background: rgba(255, 255, 255, 0.6);
+      border-color: rgba(0, 0, 0, 0.05);
+    }
+    [data-theme="light"] .about-item:hover {
+      background: rgba(255, 255, 255, 0.9);
+      border-color: rgba(56, 189, 248, 0.3);
+    }
+    [data-theme="light"] .similar-account-item {
+      background: rgba(255, 255, 255, 0.6);
+      border-color: rgba(0, 0, 0, 0.05);
+    }
+    [data-theme="light"] .similar-account-item:hover {
+      background: rgba(255, 255, 255, 0.9);
+      box-shadow: 0 10px 20px rgba(0, 0, 0, 0.05);
+    }
+
     * { margin: 0; padding: 0; box-sizing: border-box; }
     html { scroll-behavior: smooth; }
 
@@ -180,6 +205,8 @@
       font-size: 11px; font-weight: 600; color: var(--accent-violet-light);
       text-transform: uppercase; letter-spacing: 1.5px;
       margin-bottom: 24px;
+      opacity: 0;
+      animation: fadeInUp 0.8s cubic-bezier(0.16, 1, 0.3, 1) forwards;
     }
     .hero-badge-dot {
       width: 6px; height: 6px; border-radius: 50%;
@@ -196,6 +223,8 @@
       letter-spacing: -5px; margin-bottom: 28px;
       color: var(--text-primary);
       transition: all var(--transition);
+      opacity: 0;
+      animation: fadeInUp 0.8s cubic-bezier(0.16, 1, 0.3, 1) 0.1s forwards;
     }
     .hero-title span {
       background: var(--gradient-main);
@@ -208,7 +237,8 @@
       color: var(--text-secondary); line-height: 1.6;
       max-width: 600px; margin: 0 auto 48px;
       font-weight: 400;
-      opacity: 0.9;
+      opacity: 0;
+      animation: fadeInUp 0.8s cubic-bezier(0.16, 1, 0.3, 1) 0.2s forwards;
     }
 
     /* ── Arama Kutusu ── */
@@ -216,6 +246,8 @@
     .search-container {
       max-width: 620px; margin: 0 auto;
       position: relative;
+      opacity: 0;
+      animation: fadeInUp 0.8s cubic-bezier(0.16, 1, 0.3, 1) 0.3s forwards;
     }
     .search-box {
       display: flex; align-items: center;
@@ -273,9 +305,11 @@
       background: var(--accent-indigo);
       transform: scale(1.02);
       box-shadow: 0 8px 25px rgba(99, 102, 241, 0.3);
+      animation: pulseGlow 2s infinite;
     }
     .search-btn:active { transform: scale(0.97); }
-    .search-btn svg { width: 20px; height: 20px; }
+    .search-btn svg { width: 20px; height: 20px; transition: transform 0.3s ease; }
+    .search-btn:hover svg { transform: translateX(3px); }
 
     /* ── Yükleniyor (Skeleton) ── */
     .loader {
@@ -378,6 +412,19 @@
       pointer-events: auto;
       animation: toastIn 0.38s cubic-bezier(0.16, 1, 0.3, 1) forwards;
       max-width: 420px;
+      position: relative;
+      overflow: hidden;
+    }
+    .toast-item::after {
+      content: ''; position: absolute; bottom: 0; left: 0; height: 4px; width: 100%;
+      background: rgba(255,255,255,0.5);
+      animation: toastProgress 5s linear forwards;
+    }
+    .toast-item.toast-error::after { background: rgba(239, 68, 68, 0.8); }
+    .toast-item.toast-info::after { background: rgba(56, 189, 248, 0.8); }
+    .toast-item.toast-success::after { background: rgba(16, 185, 129, 0.8); }
+    @keyframes toastProgress {
+      from { width: 100%; } to { width: 0%; }
     }
     .toast-item.toast-hiding {
       animation: toastOut 0.3s ease forwards;
@@ -430,6 +477,15 @@
     @keyframes fadeIn {
       from { opacity: 0; } to { opacity: 1; }
     }
+    @keyframes fadeInUp {
+      from { opacity: 0; transform: translateY(20px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    @keyframes pulseGlow {
+      0% { box-shadow: 0 0 0 0 rgba(56, 189, 248, 0.4); }
+      70% { box-shadow: 0 0 0 10px rgba(56, 189, 248, 0); }
+      100% { box-shadow: 0 0 0 0 rgba(56, 189, 248, 0); }
+    }
 
     /* ── Profil Kartı ── */
     .profile-card, .hd-card, .posts-card, .stories-card {
@@ -439,6 +495,11 @@
       border-radius: var(--radius-2xl) !important;
       box-shadow: var(--shadow-premium) !important;
       overflow: hidden;
+      transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.4s ease !important;
+    }
+    .profile-card:hover, .hd-card:hover, .posts-card:hover, .stories-card:hover {
+      transform: translateY(-8px);
+      box-shadow: 0 24px 60px rgba(0,0,0,0.5) !important;
     }
     .profile-card {
       margin-bottom: 24px;
@@ -492,22 +553,48 @@
       margin-top: 12px; white-space: pre-wrap;
     }
     .profile-stats {
-      display: flex; gap: 0; margin-top: 32px;
-      border-top: var(--border-glass); padding: 32px 0;
+      display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; margin-top: 32px;
+      padding-top: 24px; border-top: 1px dashed rgba(255, 255, 255, 0.1);
     }
     .stat {
-      flex: 1; text-align: center;
-      border-right: var(--border-glass);
+      background: rgba(255, 255, 255, 0.03);
+      border: 1px solid rgba(255, 255, 255, 0.05);
+      border-radius: var(--radius-xl);
+      padding: 18px 8px;
+      text-align: center;
+      transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+      position: relative;
+      overflow: hidden;
     }
-    .stat:last-child { border-right: none; }
+    .stat::before {
+      content: ''; position: absolute; inset: 0;
+      background: radial-gradient(circle at 50% -20%, rgba(56, 189, 248, 0.15), transparent 60%);
+      opacity: 0; transition: opacity 0.4s ease;
+    }
+    .stat:hover {
+      transform: translateY(-6px);
+      background: rgba(255, 255, 255, 0.06);
+      border-color: rgba(56, 189, 248, 0.3);
+      box-shadow: 0 12px 24px rgba(0, 0, 0, 0.2), 0 0 15px rgba(56, 189, 248, 0.1);
+    }
+    .stat:hover::before { opacity: 1; }
     .stat-value {
-      font-size: 24px; font-weight: 800; letter-spacing: -1px;
+      font-size: 26px; font-weight: 900; letter-spacing: -1px;
       color: var(--text-primary);
+      transition: all 0.4s ease;
+      position: relative; z-index: 1;
+    }
+    .stat:hover .stat-value {
+      background: var(--gradient-main);
+      -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+      transform: scale(1.1);
     }
     .stat-label {
-      font-size: 12px; color: var(--text-muted); font-weight: 600;
-      text-transform: uppercase; letter-spacing: 1px; margin-top: 4px;
+      font-size: 11px; color: var(--text-muted); font-weight: 700;
+      text-transform: uppercase; letter-spacing: 1px; margin-top: 6px;
+      position: relative; z-index: 1; transition: color 0.3s ease;
     }
+    .stat:hover .stat-label { color: var(--text-secondary); }
 
     /* ── HD Görsel Kartı ── */
     .hd-card {
@@ -717,10 +804,50 @@
 
   @media (max-width: 768px) {
       .hero-title { letter-spacing: -1px; }
-      .profile-stats { gap: 0; }
+      .profile-stats { grid-template-columns: repeat(2, 1fr); gap: 8px; border-top: none; padding-top: 16px; }
+      .stat { padding: 12px 8px; border-radius: var(--radius-lg); }
       .modal-actions { flex-direction: column; width: 100%; }
       .modal-content { max-width: 95vw; }
       .modal-close { top: -8px; right: -8px; }
+      
+      /* Animasyon ve Hover Optimizasyonları (Mobil) */
+      .ambient-bg { animation: none !important; }
+      .profile-card:hover, .hd-card:hover, .posts-card:hover, .stories-card:hover {
+        transform: none !important;
+        box-shadow: var(--shadow-premium) !important;
+      }
+      .btn-primary:hover, .search-btn:hover {
+        transform: none !important;
+        box-shadow: 0 8px 20px rgba(59, 130, 246, 0.15) !important;
+        animation: none !important;
+      }
+      .btn-secondary:hover, .github-btn:hover {
+        transform: none !important;
+      }
+      .footer-brand:hover .footer-brand-icon {
+        transform: none !important;
+        box-shadow: 0 10px 30px rgba(56, 189, 248, 0.4) !important;
+      }
+      .stat:hover {
+        transform: none !important;
+      }
+      .stat:hover .stat-value {
+        transform: none !important;
+        color: var(--text-primary) !important;
+      }
+      .footer-link-premium:hover {
+        transform: none !important;
+        box-shadow: none !important;
+      }
+      .footer-link-premium:hover svg {
+        transform: none !important;
+      }
+      .similar-account-item:hover {
+        transform: none !important;
+      }
+      .hd-image-wrap:hover .hd-image {
+        transform: none !important;
+      }
     }
     @media (max-width: 640px) {
       .navbar-inner { padding: 0 12px; height: 56px; gap: 8px; }
@@ -766,10 +893,126 @@
       .hero-title { font-size: 26px; }
       .hero-subtitle { font-size: 13px; }
       .search-btn { padding: 10px 14px; }
-      .profile-stats { flex-wrap: wrap; }
-      .stat { min-width: 33%; }
       .posts-grid { gap: 2px; }
       .bio-link { font-size: 12px; padding: 8px 14px; }
+    }
+
+    /* ── Similar Accounts ── */
+    .similar-accounts-card {
+      display: none;
+      background: var(--bg-glass);
+      border: var(--border-glass);
+      backdrop-filter: var(--glass-blur);
+      border-radius: var(--radius-2xl);
+      margin-top: 24px;
+      overflow: hidden;
+      box-shadow: var(--shadow-premium);
+    }
+    .similar-accounts-card.active { display: block; }
+    .similar-accounts-grid {
+      display: flex;
+      overflow-x: auto;
+      gap: 16px;
+      padding: 20px 24px;
+      scroll-behavior: smooth;
+      -webkit-overflow-scrolling: touch;
+      scrollbar-width: none;
+    }
+    .similar-accounts-grid::-webkit-scrollbar { display: none; }
+    .similar-account-item {
+      flex: 0 0 110px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 10px;
+      text-decoration: none;
+      transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+      background: rgba(255, 255, 255, 0.02);
+      border: 1px solid rgba(255, 255, 255, 0.05);
+      border-radius: var(--radius-xl);
+      padding: 16px 10px;
+    }
+    .similar-account-item:hover { 
+      transform: translateY(-8px); 
+      background: rgba(255, 255, 255, 0.06);
+      border-color: rgba(56, 189, 248, 0.3);
+      box-shadow: 0 10px 24px rgba(0, 0, 0, 0.2);
+    }
+    .similar-account-avatar {
+      width: 68px;
+      height: 68px;
+      border-radius: 50%;
+      border: 2.5px solid transparent;
+      background: linear-gradient(var(--bg-card), var(--bg-card)) padding-box, var(--gradient-main) border-box;
+      padding: 3px;
+      object-fit: cover;
+      transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+    .similar-account-item:hover .similar-account-avatar {
+      transform: scale(1.1);
+    }
+    .similar-account-name {
+      font-size: 12px;
+      font-weight: 700;
+      color: var(--text-primary);
+      text-align: center;
+      width: 100%;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+      transition: color 0.3s ease;
+    }
+    .similar-account-item:hover .similar-account-name {
+      color: var(--accent-blue);
+    }
+
+    /* ── About Account ── */
+    .about-card {
+      display: none;
+      background: var(--bg-glass);
+      border: var(--border-glass);
+      backdrop-filter: var(--glass-blur);
+      border-radius: var(--radius-2xl);
+      margin-top: 24px;
+      padding: 24px;
+      box-shadow: var(--shadow-premium);
+    }
+    .about-card.active { display: block; }
+    .about-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+      gap: 16px;
+    }
+    .about-item {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+      background: rgba(255, 255, 255, 0.02);
+      border: 1px solid rgba(255, 255, 255, 0.04);
+      padding: 16px;
+      border-radius: var(--radius-lg);
+      transition: all 0.3s ease;
+    }
+    .about-item:hover {
+      background: rgba(255, 255, 255, 0.05);
+      border-color: rgba(56, 189, 248, 0.2);
+      transform: translateY(-3px);
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    }
+    .about-label {
+      font-size: 11px;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      letter-spacing: 0.8px;
+      font-weight: 700;
+      display: flex; align-items: center; gap: 6px;
+    }
+    .about-value {
+      font-size: 15px;
+      color: var(--text-primary);
+      font-weight: 700;
+      word-break: break-word;
+      line-height: 1.4;
     }
 
     /* ── Kategori ve Rozet Stilleri ── */
@@ -960,38 +1203,82 @@
     /* ── Gönderiler boş durumu ── */
     .posts-empty {
       grid-column: 1 / -1;
-      padding: 56px 32px;
+      padding: 64px 32px;
       text-align: center;
       display: flex;
       flex-direction: column;
       align-items: center;
       justify-content: center;
-      gap: 4px;
+      gap: 8px;
+      background: rgba(255, 255, 255, 0.02);
+      border-radius: var(--radius-xl);
+      margin: 16px;
+      border: 1px dashed rgba(56, 189, 248, 0.25);
+      backdrop-filter: blur(10px);
+      transition: all 0.4s ease;
+    }
+    .posts-empty:hover {
+      background: rgba(255, 255, 255, 0.04);
+      border-color: rgba(56, 189, 248, 0.4);
     }
     .posts-empty-icon {
-      width: 64px;
-      height: 64px;
+      width: 72px;
+      height: 72px;
       border-radius: 50%;
-      background: linear-gradient(135deg, rgba(59, 130, 246, 0.12) 0%, rgba(99, 102, 241, 0.08) 100%);
-      border: 1px solid rgba(59, 130, 246, 0.15);
+      background: linear-gradient(135deg, rgba(56, 189, 248, 0.15) 0%, rgba(96, 165, 250, 0.08) 100%);
+      border: 1px solid rgba(56, 189, 248, 0.3);
       display: flex;
       align-items: center;
       justify-content: center;
-      font-size: 28px;
-      margin-bottom: 12px;
+      font-size: 32px;
+      margin-bottom: 16px;
+      box-shadow: 0 0 30px rgba(56, 189, 248, 0.2), inset 0 0 20px rgba(255, 255, 255, 0.05);
+      animation: floatIcon 3.5s ease-in-out infinite;
+    }
+    @keyframes floatIcon {
+      0%, 100% { transform: translateY(0); box-shadow: 0 0 30px rgba(56, 189, 248, 0.2), inset 0 0 20px rgba(255, 255, 255, 0.05); }
+      50% { transform: translateY(-8px); box-shadow: 0 10px 40px rgba(56, 189, 248, 0.35), inset 0 0 25px rgba(255, 255, 255, 0.1); }
     }
     .posts-empty-title {
-      font-size: 15px;
-      font-weight: 700;
+      font-size: 18px;
+      font-weight: 800;
       color: var(--text-primary);
-      letter-spacing: -0.3px;
+      letter-spacing: -0.5px;
     }
     .posts-empty-desc {
-      font-size: 13px;
+      font-size: 14px;
       color: var(--text-muted);
-      font-weight: 400;
-      max-width: 280px;
-      line-height: 1.5;
+      font-weight: 500;
+      max-width: 320px;
+      line-height: 1.6;
+    }
+    .posts-empty.error-state {
+      background: rgba(239, 68, 68, 0.03);
+      border-color: rgba(239, 68, 68, 0.3);
+    }
+    .posts-empty.error-state:hover {
+      background: rgba(239, 68, 68, 0.06);
+      border-color: rgba(239, 68, 68, 0.5);
+      box-shadow: 0 10px 30px rgba(239, 68, 68, 0.1);
+    }
+    .posts-empty.error-state .posts-empty-icon {
+      background: linear-gradient(135deg, rgba(239, 68, 68, 0.2) 0%, rgba(220, 38, 38, 0.1) 100%);
+      border-color: rgba(239, 68, 68, 0.4);
+      box-shadow: 0 0 30px rgba(239, 68, 68, 0.2), inset 0 0 20px rgba(255, 255, 255, 0.05);
+    }
+    .posts-empty.warning-state {
+      background: rgba(245, 158, 11, 0.03);
+      border-color: rgba(245, 158, 11, 0.3);
+    }
+    .posts-empty.warning-state:hover {
+      background: rgba(245, 158, 11, 0.06);
+      border-color: rgba(245, 158, 11, 0.5);
+      box-shadow: 0 10px 30px rgba(245, 158, 11, 0.1);
+    }
+    .posts-empty.warning-state .posts-empty-icon {
+      background: linear-gradient(135deg, rgba(245, 158, 11, 0.2) 0%, rgba(217, 119, 6, 0.1) 100%);
+      border-color: rgba(245, 158, 11, 0.4);
+      box-shadow: 0 0 30px rgba(245, 158, 11, 0.2), inset 0 0 20px rgba(255, 255, 255, 0.05);
     }
 
     /* ── Mobil uyumluluk güncellemeleri ── */
@@ -1237,34 +1524,70 @@
 
     /* Stories Empty */
     .stories-empty {
-      padding: 32px;
+      padding: 40px 32px;
       text-align: center;
       display: flex;
       flex-direction: column;
       align-items: center;
-      gap: 4px;
+      gap: 6px;
+      background: rgba(255, 255, 255, 0.02);
+      border: 1px dashed rgba(255, 255, 255, 0.1);
+      border-radius: var(--radius-xl);
+      margin: 16px 24px;
+      transition: all 0.3s ease;
+    }
+    .stories-empty:hover {
+      background: rgba(255, 255, 255, 0.04);
+      border-color: rgba(255, 255, 255, 0.2);
     }
     .stories-empty-icon {
-      width: 48px; height: 48px;
+      width: 56px; height: 56px;
       border-radius: 50%;
-      background: rgba(245,158,11,0.08);
-      border: 1px solid rgba(245,158,11,0.12);
+      background: rgba(245,158,11,0.1);
+      border: 1px solid rgba(245,158,11,0.2);
       display: flex;
       align-items: center;
       justify-content: center;
-      font-size: 22px;
-      margin-bottom: 8px;
+      font-size: 26px;
+      margin-bottom: 12px;
+      animation: floatIcon 3.5s ease-in-out infinite;
     }
     .stories-empty-title {
-      font-size: 14px;
-      font-weight: 700;
+      font-size: 15px;
+      font-weight: 800;
       color: var(--text-primary);
     }
     .stories-empty-desc {
-      font-size: 12px;
+      font-size: 13px;
       color: var(--text-muted);
-      max-width: 260px;
+      max-width: 280px;
       line-height: 1.5;
+    }
+    .stories-empty.error-state {
+      background: rgba(239, 68, 68, 0.04);
+      border-color: rgba(239, 68, 68, 0.3);
+    }
+    .stories-empty.error-state:hover {
+      background: rgba(239, 68, 68, 0.06);
+      border-color: rgba(239, 68, 68, 0.5);
+    }
+    .stories-empty.error-state .stories-empty-icon {
+      background: rgba(239, 68, 68, 0.15);
+      border-color: rgba(239, 68, 68, 0.3);
+      color: #fca5a5;
+    }
+    .stories-empty.warning-state {
+      background: rgba(245, 158, 11, 0.04);
+      border-color: rgba(245, 158, 11, 0.3);
+    }
+    .stories-empty.warning-state:hover {
+      background: rgba(245, 158, 11, 0.06);
+      border-color: rgba(245, 158, 11, 0.5);
+    }
+    .stories-empty.warning-state .stories-empty-icon {
+      background: rgba(245, 158, 11, 0.15);
+      border-color: rgba(245, 158, 11, 0.3);
+      color: #fcd34d;
     }
 
     /* ══════════════════════════════════════════
@@ -1936,10 +2259,354 @@
       .src-btn { width: 32px; height: 32px; }
       .src-btn svg { width: 16px; height: 16px; }
     }
+
+    /* ════════════════════════════════════════════
+       ULTRA GELİŞMİŞ ANİMASYON SİSTEMİ
+    ════════════════════════════════════════════ */
+
+    /* ── Özel İmleç ── */
+    * { cursor: none !important; }
+    #cursor-dot {
+      position: fixed; top: 0; left: 0; z-index: 99999;
+      width: 8px; height: 8px; border-radius: 50%;
+      background: var(--accent-blue);
+      pointer-events: none;
+      transform: translate(-50%, -50%);
+      transition: width 0.2s, height 0.2s, background 0.2s;
+      mix-blend-mode: difference;
+      box-shadow: 0 0 10px var(--accent-blue), 0 0 20px rgba(56,189,248,0.5);
+    }
+    #cursor-ring {
+      position: fixed; top: 0; left: 0; z-index: 99998;
+      width: 36px; height: 36px; border-radius: 50%;
+      border: 1.5px solid rgba(56,189,248,0.6);
+      pointer-events: none;
+      transform: translate(-50%, -50%);
+      transition: all 0.12s cubic-bezier(0.16, 1, 0.3, 1);
+      mix-blend-mode: normal;
+    }
+    #cursor-dot.hovering { width: 16px; height: 16px; background: #fff; }
+    #cursor-ring.hovering { width: 56px; height: 56px; border-color: rgba(56,189,248,0.9); background: rgba(56,189,248,0.05); }
+    #cursor-dot.clicking { transform: translate(-50%, -50%) scale(0.6); }
+    #cursor-ring.clicking { transform: translate(-50%, -50%) scale(0.85); }
+
+    /* ── Partikül Tuvali ── */
+    #particle-canvas {
+      position: fixed; inset: 0; z-index: 0;
+      pointer-events: none; opacity: 0.5;
+    }
+
+    /* ── Floating Orbs (Arka Plan) ── */
+    .orb {
+      position: fixed; border-radius: 50%;
+      filter: blur(80px); pointer-events: none; z-index: 0;
+      animation: orbFloat linear infinite;
+      opacity: 0;
+    }
+    .orb-1 {
+      width: 500px; height: 500px;
+      background: radial-gradient(circle, rgba(56,189,248,0.15) 0%, transparent 70%);
+      top: -100px; left: -100px;
+      animation-duration: 25s; animation-delay: 0s;
+    }
+    .orb-2 {
+      width: 400px; height: 400px;
+      background: radial-gradient(circle, rgba(96,165,250,0.12) 0%, transparent 70%);
+      bottom: -100px; right: -100px;
+      animation-duration: 30s; animation-delay: -10s;
+    }
+    .orb-3 {
+      width: 300px; height: 300px;
+      background: radial-gradient(circle, rgba(16,185,129,0.08) 0%, transparent 70%);
+      top: 40%; left: 60%;
+      animation-duration: 20s; animation-delay: -5s;
+    }
+    @keyframes orbFloat {
+      0%   { transform: translate(0, 0) scale(1); opacity: 0.6; }
+      25%  { transform: translate(30px, -40px) scale(1.05); opacity: 0.8; }
+      50%  { transform: translate(-20px, 30px) scale(0.95); opacity: 0.5; }
+      75%  { transform: translate(40px, 20px) scale(1.02); opacity: 0.7; }
+      100% { transform: translate(0, 0) scale(1); opacity: 0.6; }
+    }
+
+    /* ── Magnetik Buton Efekti ── */
+    .magnetic-btn { position: relative; overflow: hidden; }
+    .magnetic-btn::before {
+      content: '';
+      position: absolute; inset: -2px;
+      background: conic-gradient(from var(--angle, 0deg), transparent 40%, rgba(56,189,248,0.8) 50%, transparent 60%);
+      border-radius: inherit;
+      opacity: 0;
+      transition: opacity 0.3s;
+      animation: rotateBorder 3s linear infinite;
+    }
+    .magnetic-btn:hover::before { opacity: 1; }
+    @property --angle { syntax: '<angle>'; initial-value: 0deg; inherits: false; }
+    @keyframes rotateBorder { to { --angle: 360deg; } }
+
+    /* ── Glitch Efekti (Hero Title) ── */
+    .glitch-text {
+      position: relative;
+      display: inline-block;
+    }
+    .glitch-text::before,
+    .glitch-text::after {
+      content: attr(data-text);
+      position: absolute;
+      top: 0; left: 0;
+      width: 100%; height: 100%;
+      background: transparent;
+      -webkit-background-clip: text;
+      background-clip: text;
+    }
+    .glitch-text::before {
+      color: rgba(255, 0, 60, 0.7);
+      animation: glitchTop 4s ease infinite;
+      clip-path: polygon(0 0, 100% 0, 100% 33%, 0 33%);
+      -webkit-text-fill-color: rgba(255, 0, 60, 0.5);
+    }
+    .glitch-text::after {
+      color: rgba(0, 255, 200, 0.7);
+      animation: glitchBottom 4s ease infinite 0.1s;
+      clip-path: polygon(0 67%, 100% 67%, 100% 100%, 0 100%);
+      -webkit-text-fill-color: rgba(0, 255, 200, 0.5);
+    }
+    @keyframes glitchTop {
+      0%, 90%, 100% { transform: translate(0); clip-path: polygon(0 0, 100% 0, 100% 33%, 0 33%); }
+      92% { transform: translate(-3px, -1px); clip-path: polygon(0 5%, 100% 5%, 100% 30%, 0 30%); }
+      94% { transform: translate(3px, 1px); clip-path: polygon(0 0, 100% 0, 100% 28%, 0 28%); }
+      96% { transform: translate(-2px, 0); }
+    }
+    @keyframes glitchBottom {
+      0%, 90%, 100% { transform: translate(0); clip-path: polygon(0 67%, 100% 67%, 100% 100%, 0 100%); }
+      92% { transform: translate(3px, 2px); clip-path: polygon(0 65%, 100% 65%, 100% 95%, 0 95%); }
+      94% { transform: translate(-3px, -1px); clip-path: polygon(0 70%, 100% 70%, 100% 100%, 0 100%); }
+      96% { transform: translate(2px, 0); }
+    }
+
+    /* ── Scroll Reveal Animasyonları ── */
+    .reveal {
+      opacity: 0;
+      transform: translateY(40px);
+      transition: opacity 0.8s cubic-bezier(0.16, 1, 0.3, 1), transform 0.8s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+    .reveal.revealed {
+      opacity: 1;
+      transform: translateY(0);
+    }
+    .reveal-left {
+      opacity: 0; transform: translateX(-40px);
+      transition: opacity 0.8s cubic-bezier(0.16, 1, 0.3, 1), transform 0.8s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+    .reveal-left.revealed { opacity: 1; transform: translateX(0); }
+    .reveal-scale {
+      opacity: 0; transform: scale(0.85);
+      transition: opacity 0.7s cubic-bezier(0.16, 1, 0.3, 1), transform 0.7s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+    .reveal-scale.revealed { opacity: 1; transform: scale(1); }
+
+    /* ── 3D Tilt Kart Efekti ── */
+    .tilt-card {
+      transform-style: preserve-3d;
+      transition: transform 0.1s ease-out;
+    }
+    .tilt-card::after {
+      content: '';
+      position: absolute; inset: 0;
+      border-radius: inherit;
+      background: radial-gradient(circle at var(--mx, 50%) var(--my, 50%),
+        rgba(255,255,255,0.08) 0%, transparent 60%);
+      pointer-events: none; z-index: 10;
+      opacity: 0; transition: opacity 0.3s;
+    }
+    .tilt-card:hover::after { opacity: 1; }
+
+    /* ── Yazı Makinesi Efekti ── */
+    .typewriter {
+      overflow: hidden;
+      border-right: 2px solid var(--accent-blue);
+      white-space: nowrap;
+      animation: typing 3.5s steps(40, end), blink-caret 0.75s step-end infinite;
+    }
+    @keyframes typing { from { width: 0 } to { width: 100% } }
+    @keyframes blink-caret { from, to { border-color: transparent } 50% { border-color: var(--accent-blue) } }
+
+    /* ── Neon Parlama Efekti ── */
+    @keyframes neonPulse {
+      0%, 100% {
+        text-shadow: 0 0 4px rgba(56,189,248,0.6), 0 0 12px rgba(56,189,248,0.4), 0 0 24px rgba(56,189,248,0.3);
+        filter: brightness(1);
+      }
+      50% {
+        text-shadow: 0 0 6px rgba(56,189,248,0.9), 0 0 18px rgba(56,189,248,0.7), 0 0 36px rgba(56,189,248,0.5);
+        filter: brightness(1.1);
+      }
+    }
+    .neon-glow { animation: neonPulse 3s ease-in-out infinite; }
+
+    /* ── Ripple Tıklama Efekti ── */
+    .ripple-effect {
+      position: relative; overflow: hidden;
+    }
+    .ripple-effect .ripple {
+      position: absolute; border-radius: 50%;
+      background: rgba(255,255,255,0.3);
+      transform: scale(0);
+      animation: rippleAnim 0.6s linear;
+      pointer-events: none;
+    }
+    @keyframes rippleAnim {
+      to { transform: scale(4); opacity: 0; }
+    }
+
+    /* ── Shimmer Loading Bar ── */
+    #page-loader {
+      position: fixed; top: 0; left: 0; right: 0; height: 3px;
+      z-index: 99999; overflow: hidden;
+      background: transparent;
+    }
+    #page-loader-bar {
+      height: 100%;
+      background: linear-gradient(90deg, transparent, var(--accent-blue), rgba(96,165,250,1), var(--accent-blue), transparent);
+      background-size: 200% 100%;
+      animation: loaderShimmer 1.5s ease-in-out infinite, loaderHide 0.5s ease 0.8s forwards;
+      transform-origin: left;
+    }
+    @keyframes loaderShimmer {
+      0% { background-position: -200% 0; width: 0%; }
+      50% { background-position: 100% 0; width: 80%; }
+      100% { background-position: 200% 0; width: 100%; }
+    }
+    @keyframes loaderHide {
+      to { opacity: 0; }
+    }
+
+    /* ── Confetti Patlama Efekti (İndirme) ── */
+    .confetti-piece {
+      position: fixed; pointer-events: none; z-index: 9999;
+      width: 8px; height: 8px; border-radius: 2px;
+      animation: confettiFall linear forwards;
+    }
+    @keyframes confettiFall {
+      0% { transform: translate(0, 0) rotate(0deg) scale(1); opacity: 1; }
+      100% { transform: translate(var(--dx), var(--dy)) rotate(var(--rot)) scale(0); opacity: 0; }
+    }
+
+    /* ── Sayı Sayma Animasyonu ── */
+    .count-up { transition: all 0.3s ease; }
+
+    /* ── Aurora Arka Plan ── */
+    #aurora-canvas {
+      position: fixed; inset: 0; z-index: -1; pointer-events: none;
+      opacity: 0.4; mix-blend-mode: screen;
+    }
+
+    /* ── Hover Glow Kartlar ── */
+    .glow-card {
+      position: relative; isolation: isolate;
+    }
+    .glow-card::before {
+      content: '';
+      position: absolute;
+      inset: -1px;
+      border-radius: inherit;
+      background: radial-gradient(400px circle at var(--mx, 50%) var(--my, 50%), rgba(56,189,248,0.15), transparent 40%);
+      opacity: 0; transition: opacity 0.4s;
+      z-index: -1;
+    }
+    .glow-card:hover::before { opacity: 1; }
+
+    /* ── Stagger Animasyon (Post Grid) ── */
+    .post-item {
+      animation: postReveal 0.5s cubic-bezier(0.16, 1, 0.3, 1) both;
+    }
+    @keyframes postReveal {
+      from { opacity: 0; transform: scale(0.8) translateY(20px); }
+      to { opacity: 1; transform: scale(1) translateY(0); }
+    }
+
+    /* ── Morph SVG Arka Plan ── */
+    #morph-bg {
+      position: fixed; inset: 0; z-index: -2; pointer-events: none;
+      overflow: hidden;
+    }
+    #morph-bg svg {
+      width: 100%; height: 100%; opacity: 0.06;
+    }
+
+    /* ── Gradient Text Animasyonu ── */
+    @keyframes gradientShift {
+      0%, 100% { background-position: 0% 50%; }
+      50% { background-position: 100% 50%; }
+    }
+    .animated-gradient {
+      background: linear-gradient(270deg, #38bdf8, #60a5fa, #a78bfa, #34d399, #38bdf8);
+      background-size: 400% 400%;
+      -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+      background-clip: text;
+      animation: gradientShift 6s ease infinite;
+    }
+
+    /* ── Scroll Progress ── */
+    #scroll-progress {
+      position: fixed; top: 0; left: 0; right: 0; height: 2px;
+      z-index: 9999; pointer-events: none;
+      background: linear-gradient(90deg, var(--accent-blue), #a78bfa);
+      transform-origin: left;
+      transform: scaleX(0);
+      transition: transform 0.1s linear;
+    }
+
+    /* ── Floating Action Buton ── */
+    #fab-scroll-top {
+      position: fixed; bottom: 32px; right: 32px; z-index: 1000;
+      width: 48px; height: 48px; border-radius: 50%;
+      background: var(--gradient-main);
+      border: none; cursor: none;
+      display: flex; align-items: center; justify-content: center;
+      box-shadow: 0 8px 24px rgba(56,189,248,0.4);
+      opacity: 0; transform: translateY(20px) scale(0.8);
+      transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+      color: white;
+    }
+    #fab-scroll-top.visible { opacity: 1; transform: translateY(0) scale(1); }
+    #fab-scroll-top:hover { transform: translateY(-4px) scale(1.1) !important; box-shadow: 0 16px 32px rgba(56,189,248,0.6); }
+    #fab-scroll-top svg { width: 20px; height: 20px; }
+
+    /* ── Spotlight Effect ── */
+    #spotlight {
+      position: fixed; inset: 0; z-index: 1; pointer-events: none;
+      background: radial-gradient(600px circle at var(--sx, -200px) var(--sy, -200px), rgba(56,189,248,0.04), transparent 40%);
+      transition: background 0.1s;
+    }
   </style>
 </head>
 
 <body>
+  <!-- ═══════ ULTRA ANİMASYON ELEMANLARI ═══════ -->
+  <div id="page-loader"><div id="page-loader-bar"></div></div>
+  <div id="scroll-progress"></div>
+  <div id="cursor-dot"></div>
+  <div id="cursor-ring"></div>
+  <canvas id="aurora-canvas"></canvas>
+  <canvas id="particle-canvas"></canvas>
+  <div id="morph-bg">
+    <svg viewBox="0 0 1440 900" preserveAspectRatio="xMidYMid slice">
+      <defs><filter id="blur-morph"><feGaussianBlur stdDeviation="40"/></filter></defs>
+      <g filter="url(#blur-morph)">
+        <ellipse id="morph1" cx="300" cy="200" rx="300" ry="200" fill="#38bdf8"/>
+        <ellipse id="morph2" cx="1100" cy="700" rx="250" ry="180" fill="#60a5fa"/>
+        <ellipse id="morph3" cx="700" cy="450" rx="180" ry="220" fill="#34d399"/>
+      </g>
+    </svg>
+  </div>
+  <div id="spotlight"></div>
+  <div class="orb orb-1"></div>
+  <div class="orb orb-2"></div>
+  <div class="orb orb-3"></div>
+  <button id="fab-scroll-top" onclick="window.scrollTo({top:0,behavior:'smooth'})" title="Yukarı çık">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><polyline points="18 15 12 9 6 15"/></svg>
+  </button>
   <div class="ambient-bg"></div>
 
   <!-- ═══════ GEZİNME ÇUBUĞU ═══════ -->
@@ -2006,7 +2673,7 @@
       Instagram HD Profil Görüntüleyici
     </div>
     <h1 class="hero-title">
-      Profil Resmini<br><span>HD Kalitesinde</span> Gör
+      Profil Resmini<br><span class="animated-gradient glitch-text" data-text="HD Kalitesinde">HD Kalitesinde</span> Gör
     </h1>
     <p class="hero-subtitle">
       Kullanıcı adını gir, profil fotoğrafını tam çözünürlükte görüntüle ve indir.<br>Gizli profiller dahil çalışır.
@@ -2027,7 +2694,7 @@
           />
           <label class="floating-label">kullanıcı_adı</label>
         </div>
-        <button id="searchBtn" class="search-btn" onclick="search()">
+        <button id="searchBtn" class="search-btn magnetic-btn ripple-effect" onclick="search()">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
           <span>Görüntüle</span>
         </button>
@@ -2217,6 +2884,39 @@
       </div>
       <div id="postsGrid" class="posts-grid"></div>
     </div>
+
+    <!-- ═══════ TAGGED POSTS KARTI ═══════ -->
+    <div id="taggedCard" class="posts-card">
+      <div class="posts-header">
+        <div class="posts-header-icon" style="background: rgba(16, 185, 129, 0.15); color: #10b981;">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M20.59 13.41l-7.17 7.17a2 2 0 01-2.83 0L2 12V2h10l8.59 8.59a2 2 0 010 2.82z"/><line x1="7" y1="7" x2="7.01" y2="7"/></svg>
+        </div>
+        <span class="posts-header-title">Etiketlenen Gönderiler</span>
+      </div>
+      <div id="taggedGrid" class="posts-grid"></div>
+    </div>
+
+    <!-- ═══════ ABOUT ACCOUNT KARTI ═══════ -->
+    <div id="aboutCard" class="about-card">
+      <div class="posts-header" style="padding: 0 0 20px 0; border-bottom: 1px solid rgba(255,255,255,0.05); margin-bottom: 20px;">
+        <div class="posts-header-icon" style="background: rgba(96, 165, 250, 0.15); color: #60a5fa;">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg>
+        </div>
+        <span class="posts-header-title">Hesap Hakkında</span>
+      </div>
+      <div id="aboutGrid" class="about-grid"></div>
+    </div>
+
+    <!-- ═══════ SIMILAR ACCOUNTS KARTI ═══════ -->
+    <div id="similarCard" class="similar-accounts-card">
+      <div class="posts-header" style="padding: 16px 24px;">
+        <div class="posts-header-icon" style="background: rgba(139, 92, 246, 0.15); color: #8b5cf6;">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 00-3-3.87"/><path d="M16 3.13a4 4 0 010 7.75"/></svg>
+        </div>
+        <span class="posts-header-title">Benzer Hesaplar</span>
+      </div>
+      <div id="similarGrid" class="similar-accounts-grid"></div>
+    </div>
   </section>
 
   <!-- ═══════ STORY VIEWER MODAL ═══════ -->
@@ -2394,6 +3094,9 @@
       document.getElementById('highlightsCard').classList.remove('active');
       document.getElementById('reelsCard').classList.remove('active');
       document.getElementById('postsCard').classList.remove('active');
+      document.getElementById('taggedCard').classList.remove('active');
+      document.getElementById('aboutCard').classList.remove('active');
+      document.getElementById('similarCard').classList.remove('active');
       storiesData = [];
       loader.classList.add('active');
 
@@ -2572,6 +3275,9 @@
           loadStories(d.id, d.username, d.profile_pic_url_hd);
           loadHighlights(d.username);
           loadReels(d.username);
+          loadTaggedPosts(d.username);
+          loadSimilarAccounts(d.username);
+          loadAboutAccount(d.username);
         }
 
       } catch (err) {
@@ -2690,10 +3396,19 @@
           if (isAuthIssue) {
             // Instagram oturum gerektiyor
             storiesContent.innerHTML = `
-              <div class="stories-empty">
+              <div class="stories-empty warning-state">
                 <div class="stories-empty-icon">🔐</div>
                 <div class="stories-empty-title">Oturum Gerekli</div>
                 <div class="stories-empty-desc">Instagram hikayelere erişim için oturum açmayı gerektiriyor. Bu bir Instagram kısıtlamasıdır.</div>
+              </div>
+            `;
+            countBadge.textContent = '–';
+          } else if (!json.success) {
+            storiesContent.innerHTML = `
+              <div class="stories-empty error-state">
+                <div class="stories-empty-icon">⚠️</div>
+                <div class="stories-empty-title">Hikayeler Çekilemedi</div>
+                <div class="stories-empty-desc">${errorMsg || 'API Hatası: Hikayelere ulaşılamadı.'}</div>
               </div>
             `;
             countBadge.textContent = '–';
@@ -2702,7 +3417,7 @@
               <div class="stories-empty">
                 <div class="stories-empty-icon">📷</div>
                 <div class="stories-empty-title">Aktif Hikaye Yok</div>
-                <div class="stories-empty-desc">${errorMsg || 'Bu kullanıcının şu an paylaştığı aktif bir hikaye bulunmuyor.'}</div>
+                <div class="stories-empty-desc">Bu kullanıcının şu an paylaştığı aktif bir hikaye bulunmuyor.</div>
               </div>
             `;
             countBadge.textContent = '0';
@@ -2741,10 +3456,10 @@
       } catch (err) {
         console.error('Stories yüklenirken hata:', err);
         storiesContent.innerHTML = `
-          <div class="stories-empty">
-            <div class="stories-empty-icon">⚠️</div>
-            <div class="stories-empty-title">Hikayeler Yüklenemedi</div>
-            <div class="stories-empty-desc">Hikayeler şu an erişilebilir değil. Hesap gizli veya Instagram erişimi engellemiş olabilir.</div>
+          <div class="stories-empty error-state">
+            <div class="stories-empty-icon">❌</div>
+            <div class="stories-empty-title">Bağlantı Hatası</div>
+            <div class="stories-empty-desc">Hikayeler yüklenirken beklenmedik bir ağ hatası oluştu. Lütfen tekrar deneyin.</div>
           </div>
         `;
         countBadge.textContent = '–';
@@ -2791,7 +3506,7 @@
         if (!json.success) {
           console.error("Highlights API Error:", json);
           content.innerHTML = `
-            <div class="stories-empty">
+            <div class="stories-empty error-state">
               <div class="stories-empty-icon">⚠️</div>
               <div class="stories-empty-title">Sunucu Hatası</div>
               <div class="stories-empty-desc">${json.error || 'Veri çekilemedi. Lütfen tekrar deneyin.'}</div>
@@ -2844,10 +3559,10 @@
       } catch (err) {
         console.error('Highlights yüklenirken hata:', err);
         content.innerHTML = `
-          <div class="stories-empty">
-            <div class="stories-empty-icon">⚠️</div>
-            <div class="stories-empty-title">Yüklenemedi</div>
-            <div class="stories-empty-desc">Erişim engeli olabilir.</div>
+          <div class="stories-empty error-state">
+            <div class="stories-empty-icon">❌</div>
+            <div class="stories-empty-title">Bağlantı Hatası</div>
+            <div class="stories-empty-desc">Ağ bağlantısı koptu veya sunucu yanıt vermiyor.</div>
           </div>
         `;
       }
@@ -3000,10 +3715,10 @@
         
         if (!json.success) {
           grid.innerHTML = `
-            <div class="posts-empty">
+            <div class="posts-empty error-state">
               <div class="posts-empty-icon">⚠️</div>
-              <div class="posts-empty-title">Hata</div>
-              <div class="posts-empty-desc">${json.error || 'API Hatası: Reels yüklenemedi.'}</div>
+              <div class="posts-empty-title">Reels Yüklenemedi</div>
+              <div class="posts-empty-desc">${json.error || 'Instagram Reels verilerine erişilemedi.'}</div>
             </div>
           `;
           return;
@@ -3075,8 +3790,156 @@
         }
       } catch (err) {
         console.error('Reels hatası:', err);
-        grid.innerHTML = `<div class="posts-empty">Yüklenirken hata oluştu.</div>`;
+        grid.innerHTML = `
+          <div class="posts-empty error-state">
+            <div class="posts-empty-icon">❌</div>
+            <div class="posts-empty-title">Bağlantı Koptu</div>
+            <div class="posts-empty-desc">İnternet bağlantınızı kontrol edip tekrar deneyin.</div>
+          </div>
+        `;
       }
+    }
+
+    // ── Etiketlenen Gönderiler ──
+    async function loadTaggedPosts(username) {
+      const card = document.getElementById('taggedCard');
+      const grid = document.getElementById('taggedGrid');
+      card.classList.add('active');
+      grid.innerHTML = `<div class="posts-empty" style="padding: 20px;"><div class="loader-spinner"></div></div>`;
+
+      try {
+        const res = await fetch('/api/instagram/tagged', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ username })
+        });
+        const json = await res.json();
+        grid.innerHTML = '';
+
+        if (!json.success) {
+          grid.innerHTML = `
+            <div class="posts-empty error-state">
+              <div class="posts-empty-icon">⚠️</div>
+              <div class="posts-empty-title">Hata Oluştu</div>
+              <div class="posts-empty-desc">${json.error || 'API Hatası: Etiketlenen gönderiler yüklenemedi.'}</div>
+            </div>
+          `;
+          return;
+        }
+
+        if (json.success && json.data) {
+          const items = json.data.items || json.data.result || json.data.result?.edges || [];
+          if (items.length > 0) {
+            items.forEach((item, i) => {
+              const media = item.node || item;
+              const shortcode = media.code || media.shortcode;
+              const c = media.image_versions2?.candidates || media.image_versions?.candidates || [];
+              const displayUrl = c[0]?.url || media.display_url || media.thumbnail_url;
+              if(!displayUrl) return;
+
+              const a = document.createElement('a');
+              a.className = 'post-item';
+              a.href = 'javascript:void(0)';
+              a.onclick = () => openPostModal(shortcode, 'p', media);
+              a.innerHTML = `<img src="/api/proxy?src=${encodeURIComponent(displayUrl)}" loading="lazy"/>`;
+              grid.appendChild(a);
+            });
+          } else {
+            grid.innerHTML = `
+              <div class="posts-empty">
+                <div class="posts-empty-icon">🏷️</div>
+                <div class="posts-empty-title">Etiket Yok</div>
+                <div class="posts-empty-desc">Etiketlenen gönderi bulunamadı.</div>
+              </div>
+            `;
+          }
+        }
+      } catch (err) { 
+        console.error('Tagged posts error:', err);
+        grid.innerHTML = `
+          <div class="posts-empty error-state">
+            <div class="posts-empty-icon">❌</div>
+            <div class="posts-empty-title">Ağ Hatası</div>
+            <div class="posts-empty-desc">Lütfen bağlantınızı kontrol edip sayfayı yenileyin.</div>
+          </div>
+        `;
+      }
+    }
+
+    // ── Benzer Hesaplar ──
+    async function loadSimilarAccounts(username) {
+      const card = document.getElementById('similarCard');
+      const grid = document.getElementById('similarGrid');
+      card.classList.add('active');
+      grid.innerHTML = `<div class="loader-spinner"></div>`;
+
+      try {
+        const res = await fetch('/api/instagram/similar', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ username })
+        });
+        const json = await res.json();
+        grid.innerHTML = '';
+
+        if (json.success && json.data) {
+          const items = json.data.items || json.data.users || json.data.result || [];
+          if (items.length > 0) {
+            items.forEach(user => {
+              const u = user.user || user;
+              const item = document.createElement('a');
+              item.className = 'similar-account-item';
+              item.href = `javascript:void(0)`;
+              item.onclick = () => { input.value = u.username; search(); };
+              item.innerHTML = `
+                <img class="similar-account-avatar" src="/api/proxy?src=${encodeURIComponent(u.profile_pic_url)}" alt=""/>
+                <span class="similar-account-name">${u.username}</span>
+              `;
+              grid.appendChild(item);
+            });
+          } else {
+            card.classList.remove('active');
+          }
+        } else {
+          card.classList.remove('active');
+        }
+      } catch (err) { console.error('Similar accounts error:', err); }
+    }
+
+    // ── Hesap Hakkında Bilgi ──
+    async function loadAboutAccount(username) {
+      const card = document.getElementById('aboutCard');
+      const grid = document.getElementById('aboutGrid');
+      card.classList.add('active');
+      grid.innerHTML = `<div class="loader-spinner"></div>`;
+
+      try {
+        const res = await fetch('/api/instagram/about', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ username })
+        });
+        const json = await res.json();
+        grid.innerHTML = '';
+
+        if (json.success && json.data) {
+          const d = json.data.result || json.data;
+          const info = [
+            { label: '📅 Katılım Tarihi', value: d.date_joined || '–' },
+            { label: '📍 Konum', value: d.location || '–' },
+            { label: '🔄 Eski Kullanıcı Adları', value: d.former_usernames || '0' },
+            { label: '👥 Ortak Takipçiler', value: d.shared_follower_count || '–' }
+          ];
+          info.forEach(item => {
+            const div = document.createElement('div');
+            div.className = 'about-item';
+            div.innerHTML = `<span class="about-label">${item.label}</span><span class="about-value">${item.value}</span>`;
+            grid.appendChild(div);
+          });
+        } else {
+          card.classList.remove('active');
+        }
+      } catch (err) { console.error('About info error:', err); }
     }
 
     // ── Masaüstü Kaydırma Yardımı (Mouse Wheel & Drag) ──
@@ -3675,6 +4538,455 @@
   </script>
   <!-- ═══════ TOAST BİLDİRİM CONTAINER ═══════ -->
   <div id="toast-container"></div>
+
+  <!-- ═══════ ULTRA ANİMASYON ENGİNE ═══════ -->
+  <script>
+  (function() {
+    'use strict';
+
+    /* ── 1. ÖZEL İMLEÇ ── */
+    const dot = document.getElementById('cursor-dot');
+    const ring = document.getElementById('cursor-ring');
+    let mouseX = -200, mouseY = -200;
+    let ringX = -200, ringY = -200;
+    const RING_LERP = 0.14;
+
+    document.addEventListener('mousemove', e => {
+      mouseX = e.clientX; mouseY = e.clientY;
+      dot.style.left = mouseX + 'px';
+      dot.style.top = mouseY + 'px';
+      // spotlight
+      document.getElementById('spotlight').style.setProperty('--sx', mouseX + 'px');
+      document.getElementById('spotlight').style.setProperty('--sy', mouseY + 'px');
+    });
+    document.addEventListener('mousedown', () => { dot.classList.add('clicking'); ring.classList.add('clicking'); });
+    document.addEventListener('mouseup', () => { dot.classList.remove('clicking'); ring.classList.remove('clicking'); });
+
+    // Hover detection for interactive elements
+    document.addEventListener('mouseover', e => {
+      if (e.target.closest('a, button, [role="button"], input, label, .post-item, .story-thumb-item')) {
+        dot.classList.add('hovering'); ring.classList.add('hovering');
+      }
+    });
+    document.addEventListener('mouseout', e => {
+      if (e.target.closest('a, button, [role="button"], input, label, .post-item, .story-thumb-item')) {
+        dot.classList.remove('hovering'); ring.classList.remove('hovering');
+      }
+    });
+
+    function animateCursor() {
+      ringX += (mouseX - ringX) * RING_LERP;
+      ringY += (mouseY - ringY) * RING_LERP;
+      ring.style.left = ringX + 'px';
+      ring.style.top = ringY + 'px';
+      requestAnimationFrame(animateCursor);
+    }
+    animateCursor();
+
+    /* ── 2. PARTİKÜL SİSTEMİ ── */
+    const pCanvas = document.getElementById('particle-canvas');
+    const pCtx = pCanvas.getContext('2d');
+    let particles = [];
+    const PARTICLE_COUNT = 80;
+
+    function resizeParticle() {
+      pCanvas.width = window.innerWidth;
+      pCanvas.height = window.innerHeight;
+    }
+    resizeParticle();
+    window.addEventListener('resize', resizeParticle);
+
+    class Particle {
+      constructor() { this.reset(); }
+      reset() {
+        this.x = Math.random() * pCanvas.width;
+        this.y = Math.random() * pCanvas.height;
+        this.vx = (Math.random() - 0.5) * 0.4;
+        this.vy = (Math.random() - 0.5) * 0.4;
+        this.radius = Math.random() * 1.5 + 0.3;
+        this.alpha = Math.random() * 0.5 + 0.1;
+        this.color = Math.random() > 0.5 ? '56,189,248' : '96,165,250';
+        this.connections = [];
+      }
+      update() {
+        this.x += this.vx; this.y += this.vy;
+        if (this.x < 0 || this.x > pCanvas.width) this.vx *= -1;
+        if (this.y < 0 || this.y > pCanvas.height) this.vy *= -1;
+        // Mouse repulsion
+        const dx = mouseX - this.x, dy = mouseY - this.y;
+        const dist = Math.sqrt(dx*dx + dy*dy);
+        if (dist < 100) {
+          this.x -= dx * 0.02;
+          this.y -= dy * 0.02;
+        }
+      }
+      draw() {
+        pCtx.beginPath();
+        pCtx.arc(this.x, this.y, this.radius, 0, Math.PI * 2);
+        pCtx.fillStyle = `rgba(${this.color},${this.alpha})`;
+        pCtx.fill();
+      }
+    }
+
+    for (let i = 0; i < PARTICLE_COUNT; i++) particles.push(new Particle());
+
+    function drawConnections() {
+      for (let i = 0; i < particles.length; i++) {
+        for (let j = i + 1; j < particles.length; j++) {
+          const dx = particles[i].x - particles[j].x;
+          const dy = particles[i].y - particles[j].y;
+          const dist = Math.sqrt(dx*dx + dy*dy);
+          if (dist < 120) {
+            pCtx.beginPath();
+            pCtx.moveTo(particles[i].x, particles[i].y);
+            pCtx.lineTo(particles[j].x, particles[j].y);
+            const alpha = (1 - dist/120) * 0.15;
+            pCtx.strokeStyle = `rgba(56,189,248,${alpha})`;
+            pCtx.lineWidth = 0.5;
+            pCtx.stroke();
+          }
+        }
+      }
+    }
+
+    function animateParticles() {
+      pCtx.clearRect(0, 0, pCanvas.width, pCanvas.height);
+      particles.forEach(p => { p.update(); p.draw(); });
+      drawConnections();
+      requestAnimationFrame(animateParticles);
+    }
+    animateParticles();
+
+    /* ── 3. AURORA CANVAS ── */
+    const aCanvas = document.getElementById('aurora-canvas');
+    const aCtx = aCanvas.getContext('2d');
+    let aTime = 0;
+
+    function resizeAurora() {
+      aCanvas.width = window.innerWidth;
+      aCanvas.height = window.innerHeight;
+    }
+    resizeAurora();
+    window.addEventListener('resize', resizeAurora);
+
+    function drawAurora() {
+      aCtx.clearRect(0, 0, aCanvas.width, aCanvas.height);
+      aTime += 0.005;
+      const w = aCanvas.width, h = aCanvas.height;
+
+      for (let i = 0; i < 3; i++) {
+        const grad = aCtx.createLinearGradient(0, h*0.3 + Math.sin(aTime + i*2)*80, w, h*0.7);
+        const colors = [
+          ['rgba(56,189,248,0.12)', 'rgba(96,165,250,0.08)', 'rgba(16,185,129,0.06)'],
+          ['rgba(96,165,250,0.10)', 'rgba(167,139,250,0.08)', 'rgba(56,189,248,0.05)'],
+          ['rgba(16,185,129,0.08)', 'rgba(56,189,248,0.10)', 'rgba(96,165,250,0.06)'],
+        ][i];
+        grad.addColorStop(0, colors[0]);
+        grad.addColorStop(0.5, colors[1]);
+        grad.addColorStop(1, colors[2]);
+
+        aCtx.beginPath();
+        aCtx.moveTo(0, h);
+        const points = 8;
+        for (let x = 0; x <= points; x++) {
+          const px = (x / points) * w;
+          const py = h * 0.4 + Math.sin(aTime * (1 + i * 0.3) + x * 0.8 + i * 2) * 120
+                     + Math.cos(aTime * 0.7 + x * 0.4) * 60;
+          x === 0 ? aCtx.moveTo(px, py) : aCtx.lineTo(px, py);
+        }
+        aCtx.lineTo(w, h); aCtx.lineTo(0, h);
+        aCtx.closePath();
+        aCtx.fillStyle = grad;
+        aCtx.fill();
+      }
+      requestAnimationFrame(drawAurora);
+    }
+    drawAurora();
+
+    /* ── 4. SVG MORPH ANİMASYON ── */
+    let morphTime = 0;
+    function animateMorph() {
+      morphTime += 0.008;
+      const m1 = document.getElementById('morph1');
+      const m2 = document.getElementById('morph2');
+      const m3 = document.getElementById('morph3');
+      if (m1) {
+        m1.setAttribute('rx', 300 + Math.sin(morphTime) * 80);
+        m1.setAttribute('ry', 200 + Math.cos(morphTime * 0.7) * 60);
+        m1.setAttribute('cx', 300 + Math.sin(morphTime * 0.5) * 50);
+      }
+      if (m2) {
+        m2.setAttribute('rx', 250 + Math.cos(morphTime * 0.8) * 70);
+        m2.setAttribute('ry', 180 + Math.sin(morphTime * 1.1) * 50);
+        m2.setAttribute('cy', 700 + Math.cos(morphTime * 0.6) * 40);
+      }
+      if (m3) {
+        m3.setAttribute('rx', 180 + Math.sin(morphTime * 1.3) * 60);
+        m3.setAttribute('ry', 220 + Math.cos(morphTime * 0.9) * 55);
+        m3.setAttribute('cx', 700 + Math.cos(morphTime * 0.4) * 80);
+      }
+      requestAnimationFrame(animateMorph);
+    }
+    animateMorph();
+
+    /* ── 5. SCROLL REVEAL ── */
+    const revealObserver = new IntersectionObserver((entries) => {
+      entries.forEach((entry, i) => {
+        if (entry.isIntersecting) {
+          setTimeout(() => entry.target.classList.add('revealed'), i * 80);
+          revealObserver.unobserve(entry.target);
+        }
+      });
+    }, { threshold: 0.1, rootMargin: '0px 0px -40px 0px' });
+
+    function observeReveal() {
+      document.querySelectorAll('.profile-card, .hd-card, .posts-card, .stories-card, .similar-accounts-card, .about-card').forEach(el => {
+        if (!el.classList.contains('reveal')) {
+          el.classList.add('reveal');
+          revealObserver.observe(el);
+        }
+      });
+    }
+    // Observe initially and when result changes
+    observeReveal();
+    const resultObserver = new MutationObserver(() => observeReveal());
+    const resultSection = document.querySelector('.result-section');
+    if (resultSection) resultObserver.observe(resultSection, { childList: true, subtree: true, attributes: true, attributeFilter: ['class'] });
+
+    /* ── 6. 3D TILT ── */
+    function initTilt(el) {
+      if (el._tiltInit) return;
+      el._tiltInit = true;
+      el.classList.add('tilt-card', 'glow-card');
+      el.addEventListener('mousemove', e => {
+        const rect = el.getBoundingClientRect();
+        const cx = rect.left + rect.width / 2;
+        const cy = rect.top + rect.height / 2;
+        const dx = (e.clientX - cx) / (rect.width / 2);
+        const dy = (e.clientY - cy) / (rect.height / 2);
+        el.style.transform = `perspective(800px) rotateY(${dx * 5}deg) rotateX(${-dy * 5}deg) translateZ(8px)`;
+        const mx = ((e.clientX - rect.left) / rect.width * 100).toFixed(1) + '%';
+        const my = ((e.clientY - rect.top) / rect.height * 100).toFixed(1) + '%';
+        el.style.setProperty('--mx', mx);
+        el.style.setProperty('--my', my);
+        el.style.setProperty('--gcard-mx', mx);
+        el.style.setProperty('--gcard-my', my);
+      });
+      el.addEventListener('mouseleave', () => {
+        el.style.transform = 'perspective(800px) rotateY(0) rotateX(0) translateZ(0)';
+        el.style.transition = 'transform 0.5s cubic-bezier(0.16,1,0.3,1)';
+        setTimeout(() => el.style.transition = '', 500);
+      });
+    }
+    function initAllTilts() {
+      document.querySelectorAll('.profile-card, .hd-card, .posts-card, .stories-card').forEach(initTilt);
+    }
+    initAllTilts();
+    new MutationObserver(initAllTilts).observe(document.body, { childList: true, subtree: true });
+
+    /* ── 7. RİPPLE EFFECT ── */
+    document.addEventListener('click', e => {
+      const btn = e.target.closest('.ripple-effect, .search-btn, .btn-primary, .btn-secondary, .footer-link-premium');
+      if (!btn) return;
+      const rect = btn.getBoundingClientRect();
+      const ripple = document.createElement('span');
+      ripple.classList.add('ripple');
+      const size = Math.max(rect.width, rect.height) * 2;
+      ripple.style.cssText = `width:${size}px;height:${size}px;left:${e.clientX-rect.left-size/2}px;top:${e.clientY-rect.top-size/2}px`;
+      btn.style.position = 'relative'; btn.style.overflow = 'hidden';
+      btn.appendChild(ripple);
+      setTimeout(() => ripple.remove(), 700);
+    });
+
+    /* ── 8. MAGNETİK BUTON ── */
+    document.querySelectorAll('.magnetic-btn, .search-btn').forEach(btn => {
+      btn.addEventListener('mousemove', e => {
+        const rect = btn.getBoundingClientRect();
+        const dx = e.clientX - rect.left - rect.width / 2;
+        const dy = e.clientY - rect.top - rect.height / 2;
+        btn.style.transform = `translate(${dx * 0.2}px, ${dy * 0.2}px)`;
+      });
+      btn.addEventListener('mouseleave', () => {
+        btn.style.transform = '';
+        btn.style.transition = 'transform 0.5s cubic-bezier(0.16,1,0.3,1)';
+        setTimeout(() => btn.style.transition = '', 500);
+      });
+    });
+
+    /* ── 9. SCROLL PROGRESS BAR ── */
+    window.addEventListener('scroll', () => {
+      const scrolled = window.scrollY;
+      const total = document.documentElement.scrollHeight - window.innerHeight;
+      const progress = Math.min(scrolled / total, 1);
+      document.getElementById('scroll-progress').style.transform = `scaleX(${progress})`;
+
+      // FAB görünürlüğü
+      const fab = document.getElementById('fab-scroll-top');
+      if (scrolled > 400) fab.classList.add('visible');
+      else fab.classList.remove('visible');
+
+      // Navbar gölge
+      const navbar = document.querySelector('.navbar');
+      if (navbar) {
+        navbar.style.boxShadow = scrolled > 10 ? '0 4px 24px rgba(0,0,0,0.3)' : '';
+      }
+    }, { passive: true });
+
+    /* ── 10. SAYAÇ ANİMASYONU ── */
+    function animateCounter(el, target, duration = 1200) {
+      if (el._counted) return;
+      el._counted = true;
+      const start = performance.now();
+      const startVal = 0;
+      const endVal = parseInt(target.replace(/[^0-9]/g, '')) || 0;
+      const suffix = target.replace(/[0-9,]/g, '').trim();
+      function update(now) {
+        const elapsed = now - start;
+        const progress = Math.min(elapsed / duration, 1);
+        const eased = 1 - Math.pow(1 - progress, 3);
+        const current = Math.round(startVal + (endVal - startVal) * eased);
+        el.textContent = current.toLocaleString('tr-TR') + suffix;
+        if (progress < 1) requestAnimationFrame(update);
+      }
+      requestAnimationFrame(update);
+    }
+
+    const counterObserver = new IntersectionObserver(entries => {
+      entries.forEach(entry => {
+        if (entry.isIntersecting) {
+          const el = entry.target;
+          const original = el.getAttribute('data-count') || el.textContent;
+          el.setAttribute('data-count', original);
+          animateCounter(el, original);
+          counterObserver.unobserve(el);
+        }
+      });
+    }, { threshold: 0.5 });
+
+    function initCounters() {
+      document.querySelectorAll('.stat-value').forEach(el => {
+        if (!el._counterObserved) {
+          el._counterObserved = true;
+          counterObserver.observe(el);
+        }
+      });
+    }
+    new MutationObserver(initCounters).observe(document.body, { childList: true, subtree: true });
+    initCounters();
+
+    /* ── 11. POST GRİD STAGGER ── */
+    function staggerPosts() {
+      document.querySelectorAll('.post-item').forEach((el, i) => {
+        if (!el._staggered) {
+          el._staggered = true;
+          el.style.animationDelay = `${i * 0.05}s`;
+        }
+      });
+    }
+    new MutationObserver(staggerPosts).observe(document.body, { childList: true, subtree: true });
+    staggerPosts();
+
+    /* ── 12. KONFETİ ANİMASYON (İNDİRME) ── */
+    window.triggerConfetti = function(x, y) {
+      const colors = ['#38bdf8','#60a5fa','#34d399','#a78bfa','#fb7185','#fbbf24'];
+      for (let i = 0; i < 30; i++) {
+        const piece = document.createElement('div');
+        piece.className = 'confetti-piece';
+        const angle = (Math.random() * 360) * Math.PI / 180;
+        const distance = 80 + Math.random() * 120;
+        piece.style.cssText = `
+          left:${x}px; top:${y}px;
+          background:${colors[Math.floor(Math.random()*colors.length)]};
+          --dx:${Math.cos(angle)*distance}px;
+          --dy:${Math.sin(angle)*distance - 60}px;
+          --rot:${Math.random()*720}deg;
+          animation-duration:${0.6 + Math.random()*0.4}s;
+          border-radius:${Math.random() > 0.5 ? '50%' : '2px'};
+          width:${4+Math.random()*8}px;
+          height:${4+Math.random()*8}px;
+        `;
+        document.body.appendChild(piece);
+        setTimeout(() => piece.remove(), 1100);
+      }
+    };
+
+    // İndirme butonlarına konfeti ekle
+    document.addEventListener('click', e => {
+      const btn = e.target.closest('.btn-primary');
+      if (btn && btn.href && btn.href.includes('download')) {
+        triggerConfetti(e.clientX, e.clientY);
+      }
+      if (btn && btn.textContent.includes('ndir')) {
+        triggerConfetti(e.clientX, e.clientY);
+      }
+    });
+
+    /* ── 13. HERO BADGE PULSE ── */
+    const badge = document.querySelector('.hero-badge');
+    if (badge) badge.classList.add('neon-glow');
+
+    /* ── 14. BRAND İCON 3D ROTATE ── */
+    const brandIcon = document.querySelector('.brand-icon');
+    if (brandIcon) {
+      let deg = 0;
+      brandIcon.addEventListener('mouseenter', () => {
+        deg += 360;
+        brandIcon.style.transform = `rotate(${deg}deg)`;
+        brandIcon.style.transition = 'transform 0.6s cubic-bezier(0.34,1.56,0.64,1)';
+      });
+    }
+
+    /* ── 15. FOOTER LİNK HOVER EFEKT ── */
+    document.querySelectorAll('.footer-link-premium').forEach(link => {
+      link.classList.add('magnetic-btn');
+      link.addEventListener('mousemove', e => {
+        const rect = link.getBoundingClientRect();
+        const dx = e.clientX - rect.left - rect.width/2;
+        const dy = e.clientY - rect.top - rect.height/2;
+        link.style.transform = `translate(${dx*0.15}px, ${dy*0.15}px) translateY(-5px)`;
+      });
+      link.addEventListener('mouseleave', () => {
+        link.style.transform = '';
+        link.style.transition = 'transform 0.5s cubic-bezier(0.16,1,0.3,1)';
+        setTimeout(() => link.style.transition = '', 500);
+      });
+    });
+
+    /* ── 16. SEARCH BOX FOCUS AURORA ── */
+    const searchInput = document.getElementById('searchInput');
+    const searchBox = document.querySelector('.search-box');
+    if (searchInput && searchBox) {
+      searchInput.addEventListener('focus', () => {
+        searchBox.style.boxShadow = '0 0 0 2px rgba(56,189,248,0.3), 0 20px 60px rgba(0,0,0,0.4), 0 0 40px rgba(56,189,248,0.1)';
+      });
+      searchInput.addEventListener('blur', () => {
+        searchBox.style.boxShadow = '';
+      });
+    }
+
+    /* ── 17. NAVBAR LINK HOVER LINE ── */
+    document.querySelectorAll('.navbar-link').forEach(link => {
+      link.style.position = 'relative';
+      link.insertAdjacentHTML('beforeend', '<span class="nav-underline" style="position:absolute;bottom:-2px;left:0;width:0;height:1px;background:var(--accent-blue);transition:width 0.3s ease;"></span>');
+      link.addEventListener('mouseenter', () => link.querySelector('.nav-underline').style.width = '100%');
+      link.addEventListener('mouseleave', () => link.querySelector('.nav-underline').style.width = '0');
+    });
+
+    /* ── 18. HiGhlight Sonuç Çerçevesi ── */
+    function flashCard(card) {
+      if (!card) return;
+      card.style.boxShadow = '0 0 0 2px rgba(56,189,248,0.6), 0 24px 60px rgba(0,0,0,0.5)';
+      setTimeout(() => card.style.boxShadow = '', 800);
+    }
+    const profileCard = document.querySelector('.profile-card');
+    if (profileCard) {
+      const obs = new MutationObserver(() => flashCard(profileCard));
+      obs.observe(profileCard, { childList: true, subtree: true });
+    }
+
+    console.log('%c🚀 Ultra Animasyon Engine v2.0 Aktif', 'color:#38bdf8;font-size:16px;font-weight:bold;');
+  })();
+  </script>
 
 </body>
 </html>

@@ -51,7 +51,9 @@ function isValidInstagramUrl(urlStr) {
         const allowedHosts = [
             'cdninstagram.com',
             'fbcdn.net',
-            'instagram.com'
+            'instagram.com',
+            'fna.fbcdn.net',
+            'cdninstagram.com'
         ];
         return allowedHosts.some(host => url.hostname.endsWith(host));
     } catch (e) {
@@ -65,35 +67,43 @@ app.get('/api/proxy', (req, res) => {
     const type = req.query.type || 'image';
     
     if (!src) return res.status(400).json({ error: 'Kaynak eksik' });
-    if (!isValidInstagramUrl(src)) return res.status(403).json({ error: 'Geçersiz kaynak adresi' });
-
-    if (type === 'video') {
-        const headers = {
-            'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36',
-            'Referer': 'https://www.instagram.com/',
-            'Accept': '*/*'
-        };
-        if (req.headers.range) headers.range = req.headers.range;
-
-        axios({
-            url: src,
-            method: 'GET',
-            responseType: 'stream',
-            headers: headers,
-            timeout: 15000
-        }).then(response => {
-            res.status(response.status);
-            ['content-type', 'content-length', 'content-range', 'accept-ranges'].forEach(h => {
-                if (response.headers[h]) res.setHeader(h, response.headers[h]);
-            });
-            response.data.pipe(res);
-        }).catch(err => {
-            console.error('Proxy video error:', err.message);
-            res.status(500).json({ error: 'Video yüklenemedi' });
-        });
-    } else {
-        res.redirect(`https://wsrv.nl/?url=${encodeURIComponent(src)}`);
+    if (!isValidInstagramUrl(src)) {
+        // Log valid hosts for debugging
+        return res.status(403).json({ error: 'Geçersiz kaynak adresi: ' + new URL(src).hostname });
     }
+
+    const headers = {
+        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36',
+        'Referer': 'https://www.instagram.com/',
+        'Accept': 'image/avif,image/webp,image/apng,image/svg+xml,image/*,*/*;q=0.8'
+    };
+    if (req.headers.range) headers.range = req.headers.range;
+
+    axios({
+        url: src,
+        method: 'GET',
+        responseType: 'stream',
+        headers: headers,
+        timeout: 20000
+    }).then(response => {
+        res.status(response.status);
+        ['content-type', 'content-length', 'content-range', 'accept-ranges', 'last-modified', 'etag'].forEach(h => {
+            if (response.headers[h]) res.setHeader(h, response.headers[h]);
+        });
+        // Ensure content-type is set if missing
+        if (!res.getHeader('content-type')) {
+            res.setHeader('content-type', type === 'video' ? 'video/mp4' : 'image/jpeg');
+        }
+        response.data.pipe(res);
+    }).catch(err => {
+        console.error('Proxy error:', err.message);
+        // Minimal fallback for images
+        if (type === 'image') {
+            res.redirect(`https://wsrv.nl/?url=${encodeURIComponent(src)}&default=ssl:placeholder.com/150`);
+        } else {
+            res.status(500).json({ error: 'Medya yüklenemedi' });
+        }
+    });
 });
 
 // ── Download API (Forcing download) ──
@@ -148,67 +158,98 @@ app.get('/api/search', async (req, res) => {
     if (!username) return res.status(400).json({ error: 'Username gerekli' });
 
     try {
-        const targetUrl = `https://i.instagram.com/api/v1/users/web_profile_info/?username=${username}`;
-        const proxyUrl = `https://corsproxy.io/?${encodeURIComponent(targetUrl)}`;
+        let userData = null;
+        let lastError = null;
 
-        const response = await axios.get(proxyUrl, {
-            headers: {
-                'x-ig-app-id': '936619743392459',
-                'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36'
-            },
-            timeout: 15000 
-        });
+        // Try /profile then /userInfo as fallback
+        const endpoints = ['/profile', '/userInfo'];
+        
+        for (const endpoint of endpoints) {
+            try {
+                const response = await axios.post(`${RAPIDAPI_BASE}${endpoint}`, { username }, {
+                    headers: RAPIDAPI_HEADERS,
+                    timeout: 20000 
+                });
 
-        const userData = response.data?.data?.user;
+                const raw = response.data;
+                // Comprehensive extraction logic
+                const candidate = raw?.data?.user || raw?.user || raw?.data || raw?.result || 
+                                 (raw?.username || raw?.id || raw?.pk ? raw : null);
+                
+                const finalCandidate = Array.isArray(candidate) ? candidate[0] : candidate;
+
+                if (finalCandidate && (finalCandidate.username || finalCandidate.id || finalCandidate.pk)) {
+                    userData = finalCandidate;
+                    break; 
+                }
+            } catch (e) {
+                lastError = e;
+                continue;
+            }
+        }
 
         if (userData) {
-            const hdUrl = userData.hd_profile_pic_url_info?.url || userData.profile_pic_url_hd || userData.profile_pic_url;
+            const hdUrl = userData.hd_profile_pic_url_info?.url || 
+                          userData.profile_pic_url_hd || 
+                          userData.profile_pic_url || 
+                          userData.hd_profile_pic_url || 
+                          userData.profile_pic_original ||
+                          "";
             
-            const timelineEdges = userData.edge_owner_to_timeline_media?.edges || [];
-            const recentPosts = timelineEdges.map(edge => {
-                const node = edge.node;
+            const timelineEdges = userData.edge_owner_to_timeline_media?.edges || 
+                                 userData.edge_owner_to_timeline_media || 
+                                 userData.recent_posts || 
+                                 userData.posts || [];
+            
+            const recentPosts = (Array.isArray(timelineEdges) ? timelineEdges : []).map(edge => {
+                const node = edge.node || edge;
+                if (!node || typeof node !== 'object') return null;
                 return {
-                    id: node.id,
-                    shortcode: node.shortcode || '',
-                    display_url: `/api/proxy?src=${encodeURIComponent(node.display_url || node.thumbnail_src || '')}`,
-                    likes: node.edge_liked_by?.count || node.edge_media_preview_like?.count || 0,
-                    comments: node.edge_media_to_comment?.count || 0,
-                    is_video: node.is_video || false,
-                    caption: node.edge_media_to_caption?.edges[0]?.node?.text || '',
-                    timestamp: node.taken_at_timestamp
+                    id: node.id || node.pk,
+                    shortcode: node.shortcode || node.code || '',
+                    display_url: `/api/proxy?src=${encodeURIComponent(node.display_url || node.thumbnail_src || node.image_url || node.display_src || '')}`,
+                    likes: node.edge_liked_by?.count || node.like_count || node.likes || 0,
+                    comments: node.edge_media_to_comment?.count || node.comment_count || node.comments || 0,
+                    is_video: node.is_video || node.media_type === 2 || false,
+                    caption: node.edge_media_to_caption?.edges?.[0]?.node?.text || node.caption?.text || (typeof node.caption === 'string' ? node.caption : ''),
+                    timestamp: node.taken_at_timestamp || node.taken_at
                 };
-            });
+            }).filter(Boolean);
 
             res.json({
                 success: true,
                 data: {
-                    id: userData.id || null,
-                    username: userData.username,
-                    full_name: userData.full_name || username,
-                    biography: userData.biography || '',
-                    is_verified: userData.is_verified || false,
-                    is_private: userData.is_private || false,
+                    id: userData.id || userData.pk || null,
+                    fbid: userData.fbid || null,
+                    username: userData.username || userData.user_name || username,
+                    full_name: userData.full_name || userData.fullName || username,
+                    biography: userData.biography || userData.bio || '',
+                    is_verified: userData.is_verified || userData.isVerified || false,
+                    is_private: userData.is_private || userData.isPrivate || false,
                     profile_pic_url_hd: `/api/proxy?src=${encodeURIComponent(hdUrl)}`,
                     profile_pic_original: hdUrl,
-                    followers: userData.edge_followed_by?.count || 0,
-                    following: userData.edge_follow?.count || 0,
-                    posts: userData.edge_owner_to_timeline_media?.count || 0,
+                    followers: userData.edge_followed_by?.count || userData.follower_count || userData.followers || 0,
+                    following: userData.edge_follow?.count || userData.following_count || userData.following || 0,
+                    posts: userData.edge_owner_to_timeline_media?.count || userData.media_count || userData.posts_count || recentPosts.length || 0,
+                    highlight_reel_count: userData.highlight_reel_count || userData.highlights_count || 0,
+                    is_joined_recently: userData.is_joined_recently || false,
+                    is_professional_account: userData.is_professional_account || false,
+                    category_name: userData.category_name || userData.business_category_name || '',
+                    external_url: userData.external_url || userData.external_link || '',
                     recent_posts: recentPosts
                 }
             });
         } else {
-            res.status(403).json({ success: false, error: 'Instagram erişimi reddetti' });
+            const status = lastError?.response?.status || 404;
+            let msg = 'Kullanıcı bulunamadı veya veri alınamadı.';
+            if (status === 429) msg = 'Aşırı istek! Lütfen biraz bekleyip tekrar deneyin (Hız sınırı aşıldı).';
+            if (status === 403) msg = 'Erişim yetkiniz yok veya engellendiniz (API hatası).';
+            if (status === 500) msg = 'Instagram sunucuları yanıt vermiyor, birazdan tekrar deneyin.';
+            res.status(status).json({ success: false, error: msg });
         }
     } catch (e) {
-        console.error('Search Proxy Hatası:', e.message);
-        const status = e.response?.status || 500;
-        let errorMessage = 'Instagram sunucularına şu an ulaşılamıyor.';
-        
-        if (status === 404) errorMessage = 'Kullanıcı bulunamadı';
-        if (status === 429) errorMessage = 'Instagram hız sınırı uyguluyor (Lütfen bekleyin)';
-        if (status === 403) errorMessage = 'Instagram erişimi engelledi';
-
-        res.status(status).json({ success: false, error: errorMessage });
+        console.error('Search API Critical Error:', e.message);
+        res.status(500).json({ success: false, error: 'Sunucu hatası oluştu' });
     }
 });
 
@@ -218,29 +259,44 @@ app.get('/api/stories', async (req, res) => {
     if (!username) return res.status(400).json({ success: false, error: 'Username gerekli' });
 
     try {
-        const response = await axios.post(`${RAPIDAPI_BASE}/stories`, {
+        const response = await fetchWithRetry(`${RAPIDAPI_BASE}/stories`, {
             username: username,
             maxId: ""
         }, {
             headers: RAPIDAPI_HEADERS,
-            timeout: 15000
+            timeout: 30000
         });
 
         const rawData = response.data;
+        
+        // Graceful handling of RapidAPI "not found" 200 OK responses
+        if (rawData && rawData.success === false && rawData.message && rawData.message.toLowerCase().includes('not found')) {
+            return res.json({ success: true, data: [] });
+        }
         let storesPool = [];
         
-        if (rawData.reels && Array.isArray(rawData.reels)) {
-            storesPool = rawData.reels.flatMap(r => r.items || [r]);
-        } else if (rawData.data?.reels && Array.isArray(rawData.data.reels)) {
-            storesPool = rawData.data.reels.flatMap(r => r.items || [r]);
-        } else if (rawData.items && Array.isArray(rawData.items)) {
-            storesPool = rawData.items;
-        } else if (Array.isArray(rawData.data)) {
-            storesPool = rawData.data;
-        }
+        // Helper to find stories in nested objects
+        const extractStories = (obj) => {
+            if (!obj || typeof obj !== 'object') return [];
+            
+            // Common keys for story arrays
+            if (Array.isArray(obj.items)) return obj.items;
+            if (Array.isArray(obj.stories)) return obj.stories;
+            if (Array.isArray(obj.reels)) return obj.reels.flatMap(r => r.items || [r]);
+            if (Array.isArray(obj.reels_media)) return obj.reels_media.flatMap(r => r.items || [r]);
+            if (obj.data) return extractStories(obj.data);
+            if (obj.result) return extractStories(obj.result);
+            if (Array.isArray(obj)) return obj;
+            
+            return [];
+        };
 
-        const formattedStories = storesPool.map((item, idx) => {
+        storesPool = extractStories(rawData);
+
+        // Map items to standard format
+        const formattedStories = (Array.isArray(storesPool) ? storesPool : []).map((item, idx) => {
             try {
+                // Handle cases where item is an array [storyObj]
                 const story = Array.isArray(item) ? item[0] : item;
                 if (!story || typeof story !== 'object') return null;
 
@@ -251,13 +307,15 @@ app.get('/api/stories', async (req, res) => {
                     const v = story.video_versions || [];
                     rawUrl = (v[0]?.url || v[0]) || story.video_url || story.url || '';
                 } else {
-                    const c = (story.image_versions2?.candidates) || story.image_versions || story.candidates || [];
+                    const c = (story.image_versions2?.candidates || story.image_versions?.candidates) || 
+                              story.image_versions || story.candidates || [];
                     rawUrl = (c[0]?.url || c[0]) || story.image_url || story.display_url || story.url || '';
                 }
 
                 if (!rawUrl) return null;
 
-                const c = (story.image_versions2?.candidates) || story.image_versions || story.candidates || [];
+                const c = (story.image_versions2?.candidates || story.image_versions?.candidates) || 
+                          story.image_versions || story.candidates || [];
                 const thumbUrl = c[c.length - 1]?.url || story.thumbnail_url || story.display_url || rawUrl;
 
                 return {
@@ -277,7 +335,11 @@ app.get('/api/stories', async (req, res) => {
 
     } catch (e) {
         console.error('Stories Error:', e.message);
-        res.status(500).json({ success: false, error: 'Instagram hikayelerine şu an erişilemiyor.' });
+        const errMsg = e.response?.data?.message || e.response?.data?.error || e.message || '';
+        if (errMsg.toLowerCase().includes('not found')) {
+            return res.json({ success: true, data: [] });
+        }
+        res.status(500).json({ success: false, error: 'Instagram hikayelerine şu an erişilemiyor. Lütfen daha sonra tekrar deneyin.' });
     }
 });
 
@@ -366,23 +428,207 @@ app.post('/api/instagram/mediaByShortcode', async (req, res) => {
     }
 });
 
+// Helper for robust API calls
+const fetchWithRetry = async (url, data, config, retries = 3) => {
+    let lastError;
+    for (let i = 0; i < retries; i++) {
+        try {
+            return await axios.post(url, data, config);
+        } catch (err) {
+            lastError = err;
+            // 404 (Not Found) or 400 (Bad Request) shouldn't be retried
+            if (err.response && (err.response.status === 404 || err.response.status === 400)) {
+                throw err;
+            }
+            // Wait 1.5 seconds before retrying
+            await new Promise(r => setTimeout(r, 1500));
+        }
+    }
+    throw lastError;
+};
+
 app.post('/api/instagram/reels', async (req, res) => {
     try {
         const { username, maxId } = req.body;
-        const response = await axios.post(`${RAPIDAPI_BASE}/reels`, { username, maxId: maxId || "" }, { headers: RAPIDAPI_HEADERS });
+        const response = await fetchWithRetry(`${RAPIDAPI_BASE}/reels`, { username, maxId: maxId || "" }, { 
+            headers: RAPIDAPI_HEADERS,
+            timeout: 25000
+        });
+        
+        if (response.data && response.data.success === false && response.data.message && response.data.message.toLowerCase().includes('not found')) {
+            return res.json({ success: true, data: { result: { edges: [] } } });
+        }
+        
         res.json({ success: true, data: response.data });
     } catch (e) {
-        res.status(e.response?.status || 500).json({ success: false, error: 'İşlem başarısız oldu' });
+        console.error('Reels API Error:', e.response?.data || e.message);
+        const errMsg = e.response?.data?.message || e.response?.data?.error || e.message || '';
+        if (errMsg.toLowerCase().includes('not found')) {
+            return res.json({ success: true, data: { result: { edges: [] } } });
+        }
+        res.status(e.response?.status || 500).json({ 
+            success: false, 
+            error: errMsg || 'Reels çekilemedi, lütfen tekrar deneyin.' 
+        });
     }
 });
 
 app.post('/api/instagram/posts', async (req, res) => {
     try {
         const { username, maxId } = req.body;
-        const response = await axios.post(`${RAPIDAPI_BASE}/posts`, { username, maxId: maxId || "" }, { headers: RAPIDAPI_HEADERS });
+        const response = await fetchWithRetry(`${RAPIDAPI_BASE}/posts`, { username, maxId: maxId || "" }, { 
+            headers: RAPIDAPI_HEADERS,
+            timeout: 25000
+        });
+        
+        if (response.data && response.data.success === false && response.data.message && response.data.message.toLowerCase().includes('not found')) {
+            return res.json({ success: true, data: { result: { edges: [] } } });
+        }
+
         res.json({ success: true, data: response.data });
     } catch (e) {
-        res.status(e.response?.status || 500).json({ success: false, error: 'İşlem başarısız oldu' });
+        console.error('Posts API Error:', e.response?.data || e.message);
+        const errMsg = e.response?.data?.message || e.response?.data?.error || e.message || '';
+        if (errMsg.toLowerCase().includes('not found')) {
+            return res.json({ success: true, data: { result: { edges: [] } } });
+        }
+        res.status(e.response?.status || 500).json({ success: false, error: 'Gönderiler çekilemedi' });
+    }
+});
+
+// ── Additional Instagram120 Endpoints ──
+
+app.post('/api/instagram/comments', async (req, res) => {
+    try {
+        const { shortcode, maxId } = req.body;
+        if (!shortcode) return res.status(400).json({ error: 'Shortcode gerekli' });
+        const response = await axios.post(`${RAPIDAPI_BASE}/comments`, { shortcode, maxId: maxId || "" }, { headers: RAPIDAPI_HEADERS });
+        res.json({ success: true, data: response.data });
+    } catch (e) {
+        res.status(e.response?.status || 500).json({ success: false, error: 'Yorumlar çekilemedi' });
+    }
+});
+
+app.post('/api/instagram/tagged', async (req, res) => {
+    try {
+        const { username, maxId } = req.body;
+        if (!username) return res.status(400).json({ error: 'Username gerekli' });
+        const response = await fetchWithRetry(`${RAPIDAPI_BASE}/tagged`, { username, maxId: maxId || "" }, { 
+            headers: RAPIDAPI_HEADERS,
+            timeout: 25000
+        });
+        
+        if (response.data && response.data.success === false && response.data.message && response.data.message.toLowerCase().includes('not found')) {
+            return res.json({ success: true, data: { result: { edges: [] } } });
+        }
+        
+        res.json({ success: true, data: response.data });
+    } catch (e) {
+        console.error('Tagged API Error:', e.response?.data || e.message);
+        const errMsg = e.response?.data?.message || e.response?.data?.error || e.message || '';
+        if (errMsg.toLowerCase().includes('not found')) {
+            return res.json({ success: true, data: { result: { edges: [] } } });
+        }
+        res.status(e.response?.status || 500).json({ success: false, error: 'Etiketlenen gönderiler çekilemedi' });
+    }
+});
+
+app.post('/api/instagram/followers', async (req, res) => {
+    try {
+        const { username, maxId } = req.body;
+        if (!username) return res.status(400).json({ error: 'Username gerekli' });
+        const response = await axios.post(`${RAPIDAPI_BASE}/followers`, { username, maxId: maxId || "" }, { headers: RAPIDAPI_HEADERS });
+        res.json({ success: true, data: response.data });
+    } catch (e) {
+        res.status(e.response?.status || 500).json({ success: false, error: 'Takipçiler çekilemedi' });
+    }
+});
+
+app.post('/api/instagram/following', async (req, res) => {
+    try {
+        const { username, maxId } = req.body;
+        if (!username) return res.status(400).json({ error: 'Username gerekli' });
+        const response = await axios.post(`${RAPIDAPI_BASE}/following`, { username, maxId: maxId || "" }, { headers: RAPIDAPI_HEADERS });
+        res.json({ success: true, data: response.data });
+    } catch (e) {
+        res.status(e.response?.status || 500).json({ success: false, error: 'Takip edilenler çekilemedi' });
+    }
+});
+
+app.post('/api/instagram/search', async (req, res) => {
+    try {
+        const { query } = req.body;
+        if (!query) return res.status(400).json({ error: 'Arama terimi gerekli' });
+        const response = await axios.post(`${RAPIDAPI_BASE}/search`, { query }, { headers: RAPIDAPI_HEADERS });
+        res.json({ success: true, data: response.data });
+    } catch (e) {
+        res.status(e.response?.status || 500).json({ success: false, error: 'Arama yapılamadı' });
+    }
+});
+
+app.post('/api/instagram/location', async (req, res) => {
+    try {
+        const { locationId, maxId } = req.body;
+        if (!locationId) return res.status(400).json({ error: 'Location ID gerekli' });
+        const response = await axios.post(`${RAPIDAPI_BASE}/location`, { locationId, maxId: maxId || "" }, { headers: RAPIDAPI_HEADERS });
+        res.json({ success: true, data: response.data });
+    } catch (e) {
+        res.status(e.response?.status || 500).json({ success: false, error: 'Konum verileri çekilemedi' });
+    }
+});
+
+app.post('/api/instagram/hashtag', async (req, res) => {
+    try {
+        const { hashtag, maxId } = req.body;
+        if (!hashtag) return res.status(400).json({ error: 'Hashtag gerekli' });
+        const response = await axios.post(`${RAPIDAPI_BASE}/hashtag`, { hashtag, maxId: maxId || "" }, { headers: RAPIDAPI_HEADERS });
+        res.json({ success: true, data: response.data });
+    } catch (e) {
+        res.status(e.response?.status || 500).json({ success: false, error: 'Hashtag verileri çekilemedi' });
+    }
+});
+
+app.post('/api/instagram/similar', async (req, res) => {
+    try {
+        const { username } = req.body;
+        if (!username) return res.status(400).json({ error: 'Username gerekli' });
+        const response = await axios.post(`${RAPIDAPI_BASE}/similar`, { username }, { headers: RAPIDAPI_HEADERS });
+        res.json({ success: true, data: response.data });
+    } catch (e) {
+        res.status(e.response?.status || 500).json({ success: false, error: 'Benzer hesaplar çekilemedi' });
+    }
+});
+
+app.post('/api/instagram/about', async (req, res) => {
+    try {
+        const { username } = req.body;
+        if (!username) return res.status(400).json({ error: 'Username gerekli' });
+        const response = await axios.post(`${RAPIDAPI_BASE}/about`, { username }, { headers: RAPIDAPI_HEADERS });
+        res.json({ success: true, data: response.data });
+    } catch (e) {
+        res.status(e.response?.status || 500).json({ success: false, error: 'Hesap bilgileri çekilemedi' });
+    }
+});
+
+app.post('/api/instagram/likers', async (req, res) => {
+    try {
+        const { shortcode } = req.body;
+        if (!shortcode) return res.status(400).json({ error: 'Shortcode gerekli' });
+        const response = await axios.post(`${RAPIDAPI_BASE}/likers`, { shortcode }, { headers: RAPIDAPI_HEADERS });
+        res.json({ success: true, data: response.data });
+    } catch (e) {
+        res.status(e.response?.status || 500).json({ success: false, error: 'Beğenenler çekilemedi' });
+    }
+});
+
+app.post('/api/instagram/mediaById', async (req, res) => {
+    try {
+        const { mediaId } = req.body;
+        if (!mediaId) return res.status(400).json({ error: 'Media ID gerekli' });
+        const response = await axios.post(`${RAPIDAPI_BASE}/mediaById`, { mediaId }, { headers: RAPIDAPI_HEADERS });
+        res.json({ success: true, data: response.data });
+    } catch (e) {
+        res.status(e.response?.status || 500).json({ success: false, error: 'Medya çekilemedi' });
     }
 });
 
