@@ -4,6 +4,8 @@ const axios = require('axios');
 const path = require('path');
 const helmet = require('helmet');
 const rateLimit = require('express-rate-limit');
+const crypto = require('crypto');
+const fs = require('fs');
 
 const app = express();
 
@@ -11,23 +13,36 @@ const app = express();
 app.set('trust proxy', 1);
 
 // ── Security Headers ──
+app.use((req, res, next) => {
+    res.locals.nonce = crypto.randomBytes(16).toString('base64');
+    next();
+});
+
 app.use(helmet({
-    contentSecurityPolicy: {
-        directives: {
-            defaultSrc: ["'self'"],
-            scriptSrc: ["'self'", "'unsafe-inline'", "https://*.rapidapi.com"],
-            scriptSrcAttr: ["'unsafe-inline'"],
-            styleSrc: ["'self'", "'unsafe-inline'", "https://fonts.googleapis.com"],
-            imgSrc: ["'self'", "data:", "https://*.cdninstagram.com", "https://*.fbcdn.net", "https://wsrv.nl", "https://*.corsproxy.io"],
-            mediaSrc: ["'self'", "https://*.cdninstagram.com", "https://*.fbcdn.net"],
-            frameSrc: ["'self'", "https://www.instagram.com"],
-            connectSrc: ["'self'", "https://*.instagram.com", "https://*.rapidapi.com", "https://corsproxy.io", "https://*.corsproxy.io"],
-            fontSrc: ["'self'", "https://fonts.gstatic.com"],
-            upgradeInsecureRequests: [],
-        }
-    },
+    contentSecurityPolicy: false,
     crossOriginEmbedderPolicy: false
 }));
+
+app.use((req, res, next) => {
+    const csp = [
+        "default-src 'self'",
+        `script-src 'self' 'nonce-${res.locals.nonce}' https://*.rapidapi.com`,
+        "script-src-attr 'none'",
+        `style-src 'self' 'nonce-${res.locals.nonce}' https://fonts.googleapis.com`,
+        "img-src 'self' data: https://*.cdninstagram.com https://*.fbcdn.net",
+        "media-src 'self' https://*.cdninstagram.com https://*.fbcdn.net",
+        "frame-src 'self' https://www.instagram.com",
+        "connect-src 'self' https://*.instagram.com https://*.rapidapi.com",
+        "font-src 'self' https://fonts.gstatic.com",
+        "upgrade-insecure-requests",
+        "base-uri 'self'",
+        "form-action 'self'",
+        "frame-ancestors 'self'",
+        "object-src 'none'"
+    ];
+    res.setHeader('Content-Security-Policy', csp.join('; '));
+    next();
+});
 
 // ── Rate Limiting ──
 const limiter = rateLimit({
@@ -40,8 +55,14 @@ app.use('/api/', limiter);
 app.use(express.json());
 
 // Ana sayfayı servis et
+const htmlTemplate = fs.readFileSync(path.join(__dirname, 'index.html'), 'utf-8');
+
 app.get('/', (req, res) => {
-    res.sendFile(path.join(__dirname, 'index.html'));
+    const nonce = res.locals.nonce;
+    const html = htmlTemplate
+        .replace(/<script(?![^>]*src=)/g, `<script nonce="${nonce}"`)
+        .replace(/<style(?![^>]*nonce)/g, `<style nonce="${nonce}"`);
+    res.type('html').send(html);
 });
 
 // ── SSRF Protection Helper ──
@@ -51,11 +72,12 @@ function isValidInstagramUrl(urlStr) {
         const allowedHosts = [
             'cdninstagram.com',
             'fbcdn.net',
-            'instagram.com',
-            'fna.fbcdn.net',
-            'cdninstagram.com'
+            'fna.fbcdn.net'
         ];
-        return allowedHosts.some(host => url.hostname.endsWith(host));
+        const hostname = url.hostname.toLowerCase();
+        return allowedHosts.some(host => {
+            return hostname === host || hostname.endsWith('.' + host);
+        });
     } catch (e) {
         return false;
     }
@@ -68,8 +90,7 @@ app.get('/api/proxy', (req, res) => {
     
     if (!src) return res.status(400).json({ error: 'Kaynak eksik' });
     if (!isValidInstagramUrl(src)) {
-        // Log valid hosts for debugging
-        return res.status(403).json({ error: 'Geçersiz kaynak adresi: ' + new URL(src).hostname });
+        return res.status(403).json({ error: 'Geçersiz kaynak adresi' });
     }
 
     const headers = {
@@ -97,12 +118,7 @@ app.get('/api/proxy', (req, res) => {
         response.data.pipe(res);
     }).catch(err => {
         console.error('Proxy error:', err.message);
-        // Minimal fallback for images
-        if (type === 'image') {
-            res.redirect(`https://wsrv.nl/?url=${encodeURIComponent(src)}&default=ssl:placeholder.com/150`);
-        } else {
-            res.status(500).json({ error: 'Medya yüklenemedi' });
-        }
+        res.status(500).json({ error: 'Medya yüklenemedi' });
     });
 });
 
@@ -113,6 +129,8 @@ app.get('/api/download', async (req, res) => {
     
     if (!src) return res.status(400).send('Kaynak eksik');
     if (!isValidInstagramUrl(src)) return res.status(403).send('Geçersiz kaynak adresi');
+
+    const safeFilename = filename.replace(/[^a-zA-Z0-9._-]/g, '_').replace(/__+/g, '_').replace(/^[_\.]+|[_\.]+$/g, '');
 
     try {
         const response = await axios({
@@ -130,7 +148,7 @@ app.get('/api/download', async (req, res) => {
         if (contentType?.includes('video/mp4')) ext = 'mp4';
         else if (contentType?.includes('image/png')) ext = 'png';
         
-        const finalFilename = filename.includes('.') ? filename : `${filename}.${ext}`;
+        const finalFilename = safeFilename.includes('.') ? safeFilename : `${safeFilename}.${ext}`;
 
         res.setHeader('Content-Disposition', `attachment; filename="${finalFilename}"`);
         res.setHeader('Content-Type', contentType || 'application/octet-stream');

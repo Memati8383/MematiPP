@@ -3040,7 +3040,7 @@
 
       item.innerHTML = `
         ${icons[type] || icons.error}
-        <span>${msg}</span>
+        <span>${escapeHTML(msg)}</span>
         <button class="toast-close" title="Kapat">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" width="14" height="14"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
         </button>
@@ -3408,7 +3408,7 @@
               <div class="stories-empty error-state">
                 <div class="stories-empty-icon">⚠️</div>
                 <div class="stories-empty-title">Hikayeler Çekilemedi</div>
-                <div class="stories-empty-desc">${errorMsg || 'API Hatası: Hikayelere ulaşılamadı.'}</div>
+                <div class="stories-empty-desc">${escapeHTML(errorMsg) || 'API Hatası: Hikayelere ulaşılamadı.'}</div>
               </div>
             `;
             countBadge.textContent = '–';
@@ -3509,7 +3509,7 @@
             <div class="stories-empty error-state">
               <div class="stories-empty-icon">⚠️</div>
               <div class="stories-empty-title">Sunucu Hatası</div>
-              <div class="stories-empty-desc">${json.error || 'Veri çekilemedi. Lütfen tekrar deneyin.'}</div>
+              <div class="stories-empty-desc">${escapeHTML(json.error) || 'Veri çekilemedi. Lütfen tekrar deneyin.'}</div>
             </div>
           `;
           return;
@@ -3718,7 +3718,7 @@
             <div class="posts-empty error-state">
               <div class="posts-empty-icon">⚠️</div>
               <div class="posts-empty-title">Reels Yüklenemedi</div>
-              <div class="posts-empty-desc">${json.error || 'Instagram Reels verilerine erişilemedi.'}</div>
+              <div class="posts-empty-desc">${escapeHTML(json.error) || 'Instagram Reels verilerine erişilemedi.'}</div>
             </div>
           `;
           return;
@@ -3821,7 +3821,7 @@
             <div class="posts-empty error-state">
               <div class="posts-empty-icon">⚠️</div>
               <div class="posts-empty-title">Hata Oluştu</div>
-              <div class="posts-empty-desc">${json.error || 'API Hatası: Etiketlenen gönderiler yüklenemedi.'}</div>
+              <div class="posts-empty-desc">${escapeHTML(json.error) || 'API Hatası: Etiketlenen gönderiler yüklenemedi.'}</div>
             </div>
           `;
           return;
@@ -3893,7 +3893,7 @@
               item.onclick = () => { input.value = u.username; search(); };
               item.innerHTML = `
                 <img class="similar-account-avatar" src="/api/proxy?src=${encodeURIComponent(u.profile_pic_url)}" alt=""/>
-                <span class="similar-account-name">${u.username}</span>
+                <span class="similar-account-name">${escapeHTML(u.username)}</span>
               `;
               grid.appendChild(item);
             });
